@@ -1,32 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_tolower.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/21 13:28:56 by nsamoilo         ###   ########.fr       */
+/*   Created: 2021/11/03 11:34:50 by nsamoilo          #+#    #+#             */
+/*   Updated: 2021/11/03 13:27:55 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "libft.h"
 
-int	initialize_info(t_info *info)
+int	ft_tolower(int c)
 {
-	ft_bzero(info, sizeof (*info));
-	if (parse_player(info) == -1 || parse_board_size(info) == -1)
-		return (-1);
-	info->board = create_char_array(info->board_size.rows, info->board_size.columns);
-	if (!info->board)
-		return (-1);
-	
-}
-
-int	main()
-{
-	t_info	info;
-	
-	if (initialize_info(&info) == -1)
-		return (-1);
+	if (c >= 65 && c <= 90)
+		return (c + 32);
+	else
+		return (c);
 }

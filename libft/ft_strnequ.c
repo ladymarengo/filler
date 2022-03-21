@@ -1,32 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_strnequ.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/21 13:28:56 by nsamoilo         ###   ########.fr       */
+/*   Created: 2021/11/02 12:18:01 by nsamoilo          #+#    #+#             */
+/*   Updated: 2021/11/02 15:39:20 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "libft.h"
 
-int	initialize_info(t_info *info)
+int	ft_strnequ(char const *s1, char const *s2, size_t n)
 {
-	ft_bzero(info, sizeof (*info));
-	if (parse_player(info) == -1 || parse_board_size(info) == -1)
-		return (-1);
-	info->board = create_char_array(info->board_size.rows, info->board_size.columns);
-	if (!info->board)
-		return (-1);
-	
-}
+	size_t	i;
 
-int	main()
-{
-	t_info	info;
-	
-	if (initialize_info(&info) == -1)
-		return (-1);
+	i = 0;
+	while (s1[i] && s2[i] && i < n)
+	{
+		if (s1[i] != s2[i])
+			return (0);
+		i++;
+	}
+	if (i < n && (s1[i] || s2[i]))
+		return (0);
+	return (1);
 }

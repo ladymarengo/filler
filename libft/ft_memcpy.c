@@ -1,32 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_memcpy.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/21 13:28:56 by nsamoilo         ###   ########.fr       */
+/*   Created: 2021/11/05 11:37:45 by nsamoilo          #+#    #+#             */
+/*   Updated: 2021/11/10 12:20:32 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "libft.h"
 
-int	initialize_info(t_info *info)
+void	*ft_memcpy(void *dst, const void *src, size_t n)
 {
-	ft_bzero(info, sizeof (*info));
-	if (parse_player(info) == -1 || parse_board_size(info) == -1)
-		return (-1);
-	info->board = create_char_array(info->board_size.rows, info->board_size.columns);
-	if (!info->board)
-		return (-1);
-	
-}
+	size_t	i;
+	char	*p;
+	char	*s;
 
-int	main()
-{
-	t_info	info;
-	
-	if (initialize_info(&info) == -1)
-		return (-1);
+	if (dst == NULL && src == NULL)
+		return (0);
+	p = (char *) dst;
+	s = (char *) src;
+	i = 0;
+	while (i < n)
+	{
+		p[i] = s[i];
+		i++;
+	}
+	return (dst);
 }

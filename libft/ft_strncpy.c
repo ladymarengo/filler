@@ -1,32 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_strncpy.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/21 13:28:56 by nsamoilo         ###   ########.fr       */
+/*   Created: 2021/11/04 11:33:19 by nsamoilo          #+#    #+#             */
+/*   Updated: 2021/11/10 17:30:16 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "libft.h"
 
-int	initialize_info(t_info *info)
+char	*ft_strncpy(char *dst, const char *src, size_t len)
 {
-	ft_bzero(info, sizeof (*info));
-	if (parse_player(info) == -1 || parse_board_size(info) == -1)
-		return (-1);
-	info->board = create_char_array(info->board_size.rows, info->board_size.columns);
-	if (!info->board)
-		return (-1);
-	
-}
+	size_t	i;
+	int		end;
 
-int	main()
-{
-	t_info	info;
-	
-	if (initialize_info(&info) == -1)
-		return (-1);
-}
+	i = 0;
+	end = 0;
+	while (i < len)
+	{
+		if (!src[i])
+			end = 1;
+		if (!end)
+			dst[i] = src[i];
+		else
+			dst[i] = '\0';
+		i++;
+	}
+	return (dst);
+}			

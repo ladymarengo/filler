@@ -1,32 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_strdup.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/21 13:28:56 by nsamoilo         ###   ########.fr       */
+/*   Created: 2021/11/04 11:19:02 by nsamoilo          #+#    #+#             */
+/*   Updated: 2021/11/04 15:33:57 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "libft.h"
 
-int	initialize_info(t_info *info)
+char	*ft_strdup(char const *s1)
 {
-	ft_bzero(info, sizeof (*info));
-	if (parse_player(info) == -1 || parse_board_size(info) == -1)
-		return (-1);
-	info->board = create_char_array(info->board_size.rows, info->board_size.columns);
-	if (!info->board)
-		return (-1);
-	
-}
+	char	*new;
 
-int	main()
-{
-	t_info	info;
-	
-	if (initialize_info(&info) == -1)
-		return (-1);
+	new = ft_strnew(ft_strlen(s1));
+	if (new == NULL)
+		return (NULL);
+	ft_strcpy(new, s1);
+	return (new);
 }

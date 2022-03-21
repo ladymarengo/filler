@@ -1,32 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_strjoin.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/21 13:28:56 by nsamoilo         ###   ########.fr       */
+/*   Created: 2021/11/05 12:32:07 by nsamoilo          #+#    #+#             */
+/*   Updated: 2021/11/08 13:55:17 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "libft.h"
 
-int	initialize_info(t_info *info)
+char	*ft_strjoin(char const *s1, char const *s2)
 {
-	ft_bzero(info, sizeof (*info));
-	if (parse_player(info) == -1 || parse_board_size(info) == -1)
-		return (-1);
-	info->board = create_char_array(info->board_size.rows, info->board_size.columns);
-	if (!info->board)
-		return (-1);
-	
-}
+	char	*new;
+	size_t	i;
 
-int	main()
-{
-	t_info	info;
-	
-	if (initialize_info(&info) == -1)
-		return (-1);
+	i = 0;
+	new = ft_strnew(ft_strlen(s1) + ft_strlen(s2));
+	if (new == NULL)
+		return (NULL);
+	while (*s1)
+	{
+		new[i] = *s1;
+		i++;
+		s1++;
+	}
+	while (*s2)
+	{
+		new[i] = *s2;
+		i++;
+		s2++;
+	}
+	new[i] = '\0';
+	return (new);
 }
