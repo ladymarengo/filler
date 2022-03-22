@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/21 13:16:12 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/22 12:54:55 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,19 +49,71 @@ int	parse_player(t_info *info)
 	return (0);
 }
 
-int	parse_board_size(t_info *info)
+int	parse_size(int *rows, int *columns)
 {
 	char	temp;
 
+	while (!ft_isdigit(temp))
+		read(STDIN_FILENO, &temp, 1);
+	*rows = parse_number(temp);
 	read(STDIN_FILENO, &temp, 1);
 	while (!ft_isdigit(temp))
 		read(STDIN_FILENO, &temp, 1);
-	info->board_size.rows = parse_number(temp);
-	read(STDIN_FILENO, &temp, 1);
-	while (!ft_isdigit(temp))
-		read(STDIN_FILENO, &temp, 1);
-	info->board_size.columns = parse_number(temp);
-	if (info->board_size.rows <= 0 || info->board_size.columns <= 0)
+	*columns = parse_number(temp);
+	if (*rows <= 0 || *columns <= 0)
 		return (-1);
+	return (0);
+}
+
+int	parse_board(t_info *info)
+{
+	int		row;
+	int		column;
+	char	temp[1];
+
+	row = 0;
+	while (row < info->board_size.columns)
+	{
+		column = 0;
+		while (column < info->board_size.columns)
+		{
+			read(STDIN_FILENO, temp, 1);
+			if (ft_strchr("XxOo.", temp[0]))
+			{
+				info->board[row][column] = temp[0];
+				column++;
+			}
+		}
+		row++;
+	}
+	return (0);
+}
+
+int	parse_piece(t_info *info)
+{
+	int		row;
+	int		column;
+	char	temp[1];
+
+	if (parse_size(&info->piece_size.rows, &info->piece_size.columns) == -1)
+		return (-1);
+	info->piece = create_char_array(info->piece_size.rows, info->piece_size.columns);
+	if (!info->piece)
+		return (-1);
+	row = 0;
+	while (row < info->piece_size.columns)
+	{
+		column = 0;
+		while (column < info->piece_size.columns)
+		{
+			read(STDIN_FILENO, temp, 1);
+			if (ft_strchr("*.", temp[0]))
+			{
+				info->piece[row][column] = temp[0];
+				column++;
+			}
+		}
+		row++;
+	}
 	return (0);
 }

@@ -19,7 +19,7 @@ typedef struct s_info
 } t_info;
 
 int	parse_player(t_info *info);
-int	parse_board_size(t_info *info);
+int	parse_size(int *rows, int *columns);
 char	**create_char_array(int rows, int columns);
 
 #endif
