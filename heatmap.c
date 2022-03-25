@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 13:14:58 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/25 13:56:32 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/25 14:10:41 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ void	set_heatmap(t_info *info, int depth)
 	}
 }
 
-int	update_heatmap(t_info *info)
+void	update_heatmap(t_info *info)
 {
 	int	depth;
 
