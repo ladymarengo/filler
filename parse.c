@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/22 12:54:55 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/25 13:12:30 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int	parse_number(char last)
 int	parse_player(t_info *info)
 {
 	char	temp;
-	
+
 	temp = '$';
 	while (!ft_isdigit(temp))
 		read(STDIN_FILENO, &temp, 1);
@@ -72,10 +72,10 @@ int	parse_board(t_info *info)
 	char	temp[1];
 
 	row = 0;
-	while (row < info->board_size.columns)
+	while (row < info->board_size.cols)
 	{
 		column = 0;
-		while (column < info->board_size.columns)
+		while (column < info->board_size.cols)
 		{
 			read(STDIN_FILENO, temp, 1);
 			if (ft_strchr("XxOo.", temp[0]))
@@ -95,16 +95,16 @@ int	parse_piece(t_info *info)
 	int		column;
 	char	temp[1];
 
-	if (parse_size(&info->piece_size.rows, &info->piece_size.columns) == -1)
+	if (parse_size(&info->piece_size.rows, &info->piece_size.cols) == -1)
 		return (-1);
-	info->piece = create_char_array(info->piece_size.rows, info->piece_size.columns);
+	info->piece = create_char_arr(info->piece_size.rows, info->piece_size.cols);
 	if (!info->piece)
 		return (-1);
 	row = 0;
-	while (row < info->piece_size.columns)
+	while (row < info->piece_size.cols)
 	{
 		column = 0;
-		while (column < info->piece_size.columns)
+		while (column < info->piece_size.cols)
 		{
 			read(STDIN_FILENO, temp, 1);
 			if (ft_strchr("*.", temp[0]))
