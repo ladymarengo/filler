@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/25 13:12:30 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/25 13:22:47 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ int	parse_piece(t_info *info)
 
 	if (parse_size(&info->piece_size.rows, &info->piece_size.cols) == -1)
 		return (-1);
-	info->piece = create_char_arr(info->piece_size.rows, info->piece_size.cols);
+	info->piece = create_char_arr(info);
 	if (!info->piece)
 		return (-1);
 	row = 0;
