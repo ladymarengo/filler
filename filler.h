@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 13:13:28 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 14:51:43 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/29 15:47:07 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,9 @@ typedef struct s_info
 	int			**heatmap;
 	t_coord		board_coord;
 	t_coord		piece_coord;
-	int			best;
+	int			best_val;
+	int			temp_val;
+	int			connections;
 	t_coord		result;
 }	t_info;
 
@@ -57,5 +59,7 @@ void	update_heatmap(t_info *info);
 int		find_solution(t_info *info);
 void	save_result(t_info *info, int value, t_coord board, t_coord piece);
 int		print_result(t_info *info);
+bool	on_board(t_info *info, int row, int col);
+t_coord	calculate_offset(int row, int col, t_coord piece, t_coord board);
 
 #endif

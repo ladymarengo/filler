@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 15:08:18 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/29 15:17:16 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,5 @@ int	main(void)
 		else
 			status = -1;
 	}
-	
 	return (cleanup(&info, status));
 }

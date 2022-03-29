@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/29 14:11:30 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 15:08:58 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/29 15:52:08 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int	print_result(t_info *info)
 {
 	FILE *f = fopen("file.txt", "a");
 
-	if (info->best >= 0)
+	if (info->best_val >= 0)
 	{
 		ft_printf("%d %d\n", info->result.row, info->result.col);
 		fprintf(f, "%d %d\n", info->result.row, info->result.col);
