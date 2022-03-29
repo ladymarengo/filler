@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:24:48 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/25 13:22:22 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/29 14:35:12 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	free_char_array(char **array)
 	i = 0;
 	while (array[i])
 	{
-		ft_strdel(*(array[i]));
+		ft_strdel(&(array[i]));
 		i++;
 	}
 }
@@ -47,7 +47,7 @@ char	**create_char_array(t_info *info)
 	return (array);
 }
 
-void	free_int_array(char **array, t_info *info)
+void	free_int_array(int **array, t_info *info)
 {
 	int	i;
 

@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/25 13:22:47 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/29 15:07:09 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ int	parse_size(int *rows, int *columns)
 {
 	char	temp;
 
+	temp = ',';
 	while (!ft_isdigit(temp))
 		read(STDIN_FILENO, &temp, 1);
 	*rows = parse_number(temp);
@@ -72,7 +73,7 @@ int	parse_board(t_info *info)
 	char	temp[1];
 
 	row = 0;
-	while (row < info->board_size.cols)
+	while (row < info->board_size.rows)
 	{
 		column = 0;
 		while (column < info->board_size.cols)
@@ -97,11 +98,11 @@ int	parse_piece(t_info *info)
 
 	if (parse_size(&info->piece_size.rows, &info->piece_size.cols) == -1)
 		return (-1);
-	info->piece = create_char_arr(info);
+	info->piece = create_char_array(info);
 	if (!info->piece)
 		return (-1);
 	row = 0;
-	while (row < info->piece_size.cols)
+	while (row < info->piece_size.rows)
 	{
 		column = 0;
 		while (column < info->piece_size.cols)

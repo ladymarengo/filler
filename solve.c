@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 14:10:08 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/25 14:37:14 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/29 14:27:06 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,20 @@ bool	can_place(t_info *info, int row, int col)
 	return (false);
 }
 
-bool	place_piece(t_info *info, int row, int col)
+int	fit_piece(t_info *info, t_coord board, t_coord piece)
 {
-	int	piece_row;
-	int	piece_col;
-	int	temp_value;
-	int	best_value;
+	(void) info;
+	(void) board;
+	(void) piece;
+	return (-1);
+}
+
+void	place_piece(t_info *info, t_coord board_coord)
+{
+	int		piece_row;
+	int		piece_col;
+	int		temp_value;
+	t_coord	temp_coord;
 
 	piece_row = 0;
 	while (piece_row < info->piece_size.rows)
@@ -52,33 +60,39 @@ bool	place_piece(t_info *info, int row, int col)
 		{
 			if (info->piece[piece_row][piece_col] == '*')
 			{
-				temp_value = fit_piece(info, row, col, piece_row, piece_col);
-				if (temp_value > 0 && temp_value < best_value)
-					save_result(info);
+				temp_coord.row = piece_row;
+				temp_coord.col = piece_col;
+				temp_value = fit_piece(info, board_coord, temp_coord);
+				if (temp_value > 0
+					&& (temp_value < info->best || info->best == -1))
+					save_result(info, temp_value, board_coord, temp_coord);
 			}
 			piece_col++;
 		}
 		piece_row++;
 	}
-	return (print_result(info));
 }
 
 int	find_solution(t_info *info)
 {
-	int	row;
-	int	col;
+	int		row;
+	int		col;
+	t_coord	temp_coord;
 
+	info->best = -1;
 	row = 0;
 	while (row < info->board_size.rows)
 	{
 		col = 0;
 		while (col < info->board_size.cols)
 		{
-			if (can_place(info, row, col) && place_piece(info, row, col))
-				return (0);
+			temp_coord.row = row;
+			temp_coord.col = col;
+			if (can_place(info, row, col))
+				place_piece(info, temp_coord);
 			col++;
 		}
 		row++;
 	}
-	return (-1);
+	return (print_result(info));
 }
