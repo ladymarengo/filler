@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 13:13:28 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 15:47:07 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/31 16:16:24 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,5 +61,8 @@ void	save_result(t_info *info, int value, t_coord board, t_coord piece);
 int		print_result(t_info *info);
 bool	on_board(t_info *info, int row, int col);
 t_coord	calculate_offset(int row, int col, t_coord piece, t_coord board);
+
+void	make_log(t_info *info);
+
 
 #endif

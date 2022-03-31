@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 15:17:16 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/03/31 16:31:16 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,16 +42,19 @@ int	main(void)
 	int		status;
 	FILE *f = fopen("file.txt", "w+");
 
-	fprintf(f, "Start\n");
-	fclose(f);
+	// fprintf(f, "Start\n");
+	
 	if (initialize_info(&info) == -1)
 		return (cleanup(&info, -1));
+	// fprintf(f, "Player '%c'\n", info.player);
+	fclose(f);
 	status = 1;
 	while (status >= 0)
 	{
 		if (parse_board(&info) == 0 && parse_piece(&info) == 0)
 		{
 			update_heatmap(&info);
+			// make_log(&info);
 			status = find_solution(&info);
 		}
 		else
