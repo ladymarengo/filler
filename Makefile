@@ -6,12 +6,12 @@
 #    By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/29 14:27:47 by nsamoilo          #+#    #+#              #
-#    Updated: 2022/03/31 15:19:07 by nsamoilo         ###   ########.fr        #
+#    Updated: 2022/04/01 12:45:33 by nsamoilo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = nsamoilo.filler
-FUNCTIONS = main arrays heatmap parse result solve helpers
+FUNCTIONS = main arrays heatmap parse result solve helpers halfline
 FILES = $(patsubst %, %.c, $(FUNCTIONS))
 OBJECTS = $(patsubst %, %.o, $(FUNCTIONS))
 

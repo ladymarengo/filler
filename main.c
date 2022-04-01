@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 12:16:17 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/31 16:31:16 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/01 13:09:55 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,8 @@ int	main(void)
 	{
 		if (parse_board(&info) == 0 && parse_piece(&info) == 0)
 		{
-			update_heatmap(&info);
-			// make_log(&info);
+			update_heatmap_new(&info);
+			make_log(&info);
 			status = find_solution(&info);
 		}
 		else
