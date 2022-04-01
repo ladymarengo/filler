@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 14:10:08 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/01 12:06:51 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/01 15:04:11 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void	place_piece(t_info *info, t_coord board_coord)
 				info->temp_val = 0;
 				temp_value = fit_piece(info, board_coord, piece_coord);
 				if (temp_value > 0
-					&& (temp_value < info->best_val || info->best_val == -1))
+					&& (info->best_val == -1 || info->best_val > temp_value))
 					save_result(info, temp_value, board_coord, piece_coord);
 			}
 		}
