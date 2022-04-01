@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 13:14:58 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/25 14:10:41 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/01 11:46:06 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	set_to_max(t_info *info)
 		col = 0;
 		while (col < info->board_size.cols)
 		{
-			if (info->board[row][col] == ft_tolower(info->enemy))
+			if (ft_toupper(info->board[row][col]) == info->enemy)
 				info->heatmap[row][col] = 0;
 			else
 				info->heatmap[row][col] = max;
