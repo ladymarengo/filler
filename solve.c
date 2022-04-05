@@ -6,13 +6,13 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 14:10:08 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/01 15:04:11 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/05 16:25:26 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "filler.h"
 
-bool	can_place(t_info *info, int row, int col)
+static bool	can_place(t_info *info, int row, int col)
 {
 	int	x;
 	int	y;
@@ -36,16 +36,19 @@ bool	can_place(t_info *info, int row, int col)
 	return (false);
 }
 
-int	fit_piece(t_info *info, t_coord board, t_coord piece)
+static bool	invalid_point(t_info *info, int row, int col)
+{
+	return (!on_board(info, row, col)
+		|| !(ft_toupper(info->board[row][col]) == info->player
+		|| info->board[row][col] == '.'));
+}
+
+static int	fit_piece(t_info *info, t_coord board, t_coord piece)
 {
 	int		row;
 	int		col;
 	t_coord	temp;
 
-	FILE *f = fopen("file.txt", "a");
-
-	// fprintf(f, "Start fitting\n");
-	// fflush(f);
 	row = -1;
 	while (row++ < info->piece_size.rows - 1)
 	{
@@ -53,11 +56,8 @@ int	fit_piece(t_info *info, t_coord board, t_coord piece)
 		while (col++ < info->piece_size.cols - 1)
 		{
 			temp = calculate_offset(row, col, piece, board);
-			// fprintf(f, "Offset is %d %d\n", temp.row, temp.col);
-			// fflush(f);
-			if (info->piece[row][col] == '*' && (!on_board(info, temp.row, temp.col)
-				|| !((ft_toupper(info->board[temp.row][temp.col]) == info->player)
-				|| info->board[temp.row][temp.col] == '.')))
+			if (info->piece[row][col] == '*'
+				&& invalid_point(info, temp.row, temp.col))
 				return (-1);
 			if (info->piece[row][col] == '*'
 				&& ft_toupper(info->board[temp.row][temp.col]) == info->player)
@@ -66,15 +66,12 @@ int	fit_piece(t_info *info, t_coord board, t_coord piece)
 				info->temp_val += info->heatmap[temp.row][temp.col];
 		}
 	}
-	// fprintf(f, "Connections are %d and value is %d\n", info->connections, info->temp_val);
-	// fflush(f);
-	fclose(f);
 	if (info->connections == 1)
 		return (info->temp_val);
 	return (-1);
 }
 
-void	place_piece(t_info *info, t_coord board_coord)
+static void	place_piece(t_info *info, t_coord board_coord)
 {
 	int		piece_row;
 	int		piece_col;
@@ -109,11 +106,6 @@ int	find_solution(t_info *info)
 	int		col;
 	t_coord	temp_coord;
 
-	FILE *f = fopen("file.txt", "a");
-
-	// fprintf(f, "Start solving\n");
-	// fflush(f);
-
 	info->best_val = -1;
 	row = 0;
 	while (row < info->board_size.rows)
@@ -121,19 +113,13 @@ int	find_solution(t_info *info)
 		col = 0;
 		while (col < info->board_size.cols)
 		{
-			// fprintf(f, "Check %d %d with '%c'\n", row, col, info->board[row][col]);
-			// fflush(f);
 			temp_coord.row = row;
 			temp_coord.col = col;
 			if (can_place(info, row, col))
-			{
-				// fprintf(f, "Will try place\n");
 				place_piece(info, temp_coord);
-			}
 			col++;
 		}
 		row++;
 	}
-	fclose(f);
 	return (print_result(info));
 }

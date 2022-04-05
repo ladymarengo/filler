@@ -5,20 +5,57 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/25 13:14:58 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/01 14:59:11 by nsamoilo         ###   ########.fr       */
+/*   Created: 2022/04/01 11:50:25 by nsamoilo          #+#    #+#             */
+/*   Updated: 2022/04/05 16:29:26 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "filler.h"
 
-void	set_to_max(t_info *info)
+static bool	center_is_captured(t_info *info)
 {
 	int	row;
 	int	col;
-	int	max;
 
-	max = ft_max_int(info->board_size.rows, info->board_size.cols);
+	row = info->board_size.rows / 2;
+	col = info->board_size.cols / 2;
+	while (row <= info->board_size.rows / 2 + 1)
+	{
+		while (col <= info->board_size.cols / 2 + 1)
+		{
+			if (info->board[row][col] != '.')
+				return (true);
+			col++;
+		}
+		row++;
+	}
+	return (false);
+}
+
+static bool	center_row_is_captured(t_info *info)
+{
+	int	row;
+	int	col;
+
+	row = info->board_size.rows / 2;
+	col = 0;
+	while (col < info->board_size.cols)
+	{
+		if (ft_toupper(info->board[row][col]) == info->player)
+			return (true);
+		col++;
+	}
+	return (false);
+}
+
+static int	distance_to_enemy(t_info *info, int check_row, int check_col)
+{
+	int	best;
+	int	temp;
+	int	row;
+	int	col;
+
+	best = info->board_size.rows + info->board_size.cols;
 	row = 0;
 	while (row < info->board_size.rows)
 	{
@@ -26,49 +63,29 @@ void	set_to_max(t_info *info)
 		while (col < info->board_size.cols)
 		{
 			if (ft_toupper(info->board[row][col]) == info->enemy)
-				info->heatmap[row][col] = 0;
-			else
-				info->heatmap[row][col] = max;
+			{
+				temp = ft_abs(check_row - row) + ft_abs(check_col - col);
+				if (temp < best)
+					best = temp;
+			}
 			col++;
 		}
 		row++;
 	}
+	return (best);
 }
 
-void	set_neighbours(t_info *info, int depth, int row, int col)
+static int	distance_to_center(t_info *info, int row, int col)
 {
-	int	x;
-	int	y;
-	int	max;
+	int	center_row;
+	int	center_col;
 
-	max = ft_max_int(info->board_size.rows, info->board_size.cols);
-	x = row - 1;
-	while (x <= row + 1)
-	{
-		y = col - 1;
-		while (y <= col + 1)
-		{
-			if (x > 0 && x < info->board_size.rows
-				&& y > 0 && y < info->board_size.cols
-				&& (x != row && y != col)
-				&& info->heatmap[x][y] == max)
-				info->heatmap[x][y] = depth;
-			y++;
-		}
-		x++;
-	}
-
-	// if (on_board(info, row - 1, col) && info->heatmap[row - 1][col] == max)
-	// 	info->heatmap[row - 1][col] = depth;
-	// if (on_board(info, row + 1, col) && info->heatmap[row + 1][col] == max)
-	// 	info->heatmap[row + 1][col] = depth;
-	// if (on_board(info, row, col - 1) && info->heatmap[row][col - 1] == max)
-	// 	info->heatmap[row][col - 1] = depth;
-	// if (on_board(info, row, col + 1) && info->heatmap[row][col + 1] == max)
-	// 	info->heatmap[row][col + 1] = depth;
+	center_row = info->board_size.rows / 2;
+	center_col = info->board_size.cols / 2;
+	return (ft_abs(center_row - row) + ft_abs(center_col - col));
 }
 
-void	set_heatmap(t_info *info, int depth)
+void	update_heatmap(t_info *info)
 {
 	int	row;
 	int	col;
@@ -79,23 +96,15 @@ void	set_heatmap(t_info *info, int depth)
 		col = 0;
 		while (col < info->board_size.cols)
 		{
-			if (info->heatmap[row][col] == depth)
-				set_neighbours(info, depth + 1, row, col);
+			if (center_row_is_captured(info) && center_is_captured(info))
+				info->heatmap[row][col] = distance_to_enemy(info, row, col);
+			else if (center_row_is_captured(info))
+				info->heatmap[row][col] = distance_to_center(info, row, col);
+			else
+				info->heatmap[row][col] = \
+				ft_abs(info->board_size.rows / 2 - row);
 			col++;
 		}
 		row++;
-	}
-}
-
-void	update_heatmap(t_info *info)
-{
-	int	depth;
-
-	set_to_max(info);
-	depth = 0;
-	while (depth < ft_max_int(info->board_size.rows, info->board_size.cols))
-	{
-		set_heatmap(info, depth);
-		depth++;
 	}
 }

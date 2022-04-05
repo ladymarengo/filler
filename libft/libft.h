@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:02:21 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 14:31:41 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/05 16:28:02 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,5 +91,6 @@ char	*ft_itoa_without_sign(intmax_t n);
 char	*ft_itoa_base(uintmax_t ln, unsigned int base);
 void	ft_str_toupper(char	*str);
 int		ft_max_int(int first, int second);
+int		ft_abs(int value);
 
 #endif
