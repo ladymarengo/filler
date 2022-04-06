@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 14:10:08 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/05 16:25:26 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/06 12:49:07 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,8 @@ int	find_solution(t_info *info)
 		{
 			temp_coord.row = row;
 			temp_coord.col = col;
-			if (can_place(info, row, col))
+			if (ft_toupper(info->board[row][col]) == info->player
+				&& can_place(info, row, col))
 				place_piece(info, temp_coord);
 			col++;
 		}

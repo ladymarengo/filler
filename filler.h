@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 13:13:28 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/05 16:31:18 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/06 12:57:08 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ typedef struct s_info
 	t_coord		result;
 	int			row_dir;
 	int			col_dir;
+	t_coord		piece_start;
+	t_coord		piece_end;
 }	t_info;
 
 int		parse_player(t_info *info);
@@ -61,5 +63,6 @@ int		print_result(t_info *info);
 bool	on_board(t_info *info, int row, int col);
 t_coord	calculate_offset(int row, int col, t_coord piece, t_coord board);
 void	update_heatmap(t_info *info);
+void	find_borders(t_info *info);
 
 #endif

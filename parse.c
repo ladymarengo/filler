@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 15:07:09 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/06 12:55:04 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,10 +96,9 @@ int	parse_piece(t_info *info)
 	int		column;
 	char	temp[1];
 
-	if (parse_size(&info->piece_size.rows, &info->piece_size.cols) == -1)
-		return (-1);
 	info->piece = create_char_array(info);
-	if (!info->piece)
+	if (parse_size(&info->piece_size.rows, &info->piece_size.cols) == -1
+		|| !info->piece)
 		return (-1);
 	row = 0;
 	while (row < info->piece_size.rows)
@@ -116,5 +115,6 @@ int	parse_piece(t_info *info)
 		}
 		row++;
 	}
+	find_borders(info);
 	return (0);
 }
