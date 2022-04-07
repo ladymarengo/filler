@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 13:13:28 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 15:09:47 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 16:58:40 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,5 +68,6 @@ void	update_heatmap(t_info *info);
 void	find_borders(t_info *info);
 bool	center_is_captured(t_info *info);
 bool	center_row_is_captured(t_info *info);
+void	update_centers(t_info *info);
 
 #endif

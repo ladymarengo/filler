@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 14:10:08 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 15:48:09 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 17:07:02 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ static bool	can_place(t_info *info, int row, int col)
 	int	x;
 	int	y;
 
-	if (ft_toupper(info->board[row][col]) != info->player)
+	if (info->board[row][col] != info->player)
 		return (false);
 	x = row - 1;
 	while (x <= row + 1)
@@ -39,7 +39,7 @@ static bool	can_place(t_info *info, int row, int col)
 static bool	invalid_point(t_info *info, int row, int col)
 {
 	return (!on_board(info, row, col)
-		|| !(ft_toupper(info->board[row][col]) == info->player
+		|| !(info->board[row][col] == info->player
 		|| info->board[row][col] == '.'));
 }
 
@@ -60,7 +60,7 @@ static int	fit_piece(t_info *info, t_coord board, t_coord piece)
 			{
 				if (invalid_point(info, temp.row, temp.col))
 					return (-1);
-				if (ft_toupper(info->board[temp.row][temp.col]) == info->player)
+				if (info->board[temp.row][temp.col] == info->player)
 					info->connections++;
 				info->temp_val += info->heatmap[temp.row][temp.col];
 			}
@@ -115,7 +115,7 @@ int	find_solution(t_info *info)
 		{
 			temp_coord.row = row;
 			temp_coord.col = col;
-			if (ft_toupper(info->board[row][col]) == info->player
+			if (info->board[row][col] == info->player
 				&& can_place(info, row, col))
 				place_piece(info, temp_coord);
 			col++;

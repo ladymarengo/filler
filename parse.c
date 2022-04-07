@@ -6,11 +6,13 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 15:10:41 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 17:05:11 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "filler.h"
+
+#include <stdio.h>
 
 int	parse_number(char last)
 {
@@ -72,6 +74,10 @@ int	parse_board(t_info *info)
 	int		column;
 	char	temp[1];
 
+	// FILE *f = fopen("file.txt", "a");
+
+	// fprintf(f, "\n");
+
 	row = 0;
 	while (row < info->board_size.rows)
 	{
@@ -81,14 +87,21 @@ int	parse_board(t_info *info)
 			read(STDIN_FILENO, temp, 1);
 			if (ft_strchr("XxOo.", temp[0]))
 			{
-				info->board[row][column] = temp[0];
+				if (temp[0] == 'x')
+					info->board[row][column] = 'X';
+				else if (temp[0] == 'o')
+					info->board[row][column] = 'O';
+				else
+					info->board[row][column] = temp[0];
+				// fprintf(f, "%c", info->board[row][column]);
 				column++;
 			}
 		}
+		// fprintf(f, "\n");
 		row++;
 	}
-	info->center_captured = center_is_captured(info);
-	info->center_row_captured = center_row_is_captured(info);
+	update_centers(info);
+	// fclose(f);
 	return (0);
 }
 

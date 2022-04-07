@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/01 11:50:25 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 15:11:24 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 17:05:40 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static int	distance_to_enemy(t_info *info, int check_row, int check_col)
 		col = 0;
 		while (col < info->board_size.cols)
 		{
-			if (ft_toupper(info->board[row][col]) == info->enemy)
+			if (info->board[row][col] == info->enemy)
 			{
 				temp = ft_abs(check_row - row) + ft_abs(check_col - col);
 				if (temp < best)
