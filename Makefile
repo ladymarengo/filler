@@ -6,7 +6,7 @@
 #    By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/29 14:27:47 by nsamoilo          #+#    #+#              #
-#    Updated: 2022/04/07 16:59:05 by nsamoilo         ###   ########.fr        #
+#    Updated: 2022/04/07 19:04:14 by nsamoilo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,8 +19,8 @@ all: $(NAME)
 
 $(NAME):
 	make -C libft/
-	gcc -Wall -Wextra -Werror -c $(FILES)
-	gcc -Wall -Werror -Wextra $(OBJECTS) libft/libft.a -o $(NAME)
+	gcc -Wall -Wextra -Werror -g -c $(FILES)
+	gcc -Wall -Werror -Wextra -g  $(OBJECTS) libft/libft.a -o $(NAME)
 	make fclean -C libft/
 
 clean:

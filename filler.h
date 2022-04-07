@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 13:13:28 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 16:58:40 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 17:40:35 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ int		parse_player(t_info *info);
 int		parse_size(int *rows, int *columns);
 int		parse_board(t_info *info);
 int		parse_piece(t_info *info);
-char	**create_char_array(t_info *info);
+char	**create_char_array(int rows, int cols);
 int		**create_int_array(t_info *info);
 void	free_char_array(char **array);
 void	free_int_array(int **array, t_info *info);
@@ -69,5 +69,7 @@ void	find_borders(t_info *info);
 bool	center_is_captured(t_info *info);
 bool	center_row_is_captured(t_info *info);
 void	update_centers(t_info *info);
+int		distance_to_center(t_info *info, int row, int col);
+char	parse_char(char c);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:24:48 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/03/29 14:35:12 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 19:22:30 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,23 +19,26 @@ void	free_char_array(char **array)
 	i = 0;
 	while (array[i])
 	{
-		ft_strdel(&(array[i]));
+		free(array[i]);
+		array[i] = NULL;
 		i++;
 	}
+	free(array);
+	array = NULL;
 }
 
-char	**create_char_array(t_info *info)
+char	**create_char_array(int rows, int cols)
 {
 	char	**array;
 	int		i;
 
-	array = (char **)malloc(sizeof(char *) * (info->board_size.rows + 1));
+	array = (char **)malloc(sizeof(char *) * (rows + 1));
 	if (!array)
 		return (NULL);
 	i = 0;
-	while (i < info->board_size.rows)
+	while (i < rows)
 	{
-		array[i] = ft_strnew(info->board_size.cols);
+		array[i] = ft_strnew(cols);
 		if (!array[i])
 		{
 			free_char_array(array);
@@ -57,6 +60,7 @@ void	free_int_array(int **array, t_info *info)
 		free(array[i]);
 		i++;
 	}
+	free(array);
 }
 
 int	**create_int_array(t_info *info)

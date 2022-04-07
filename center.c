@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/07 16:44:57 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 16:47:29 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 17:26:20 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,4 +52,14 @@ bool	center_row_is_captured(t_info *info)
 		col++;
 	}
 	return (false);
+}
+
+int	distance_to_center(t_info *info, int row, int col)
+{
+	int	center_row;
+	int	center_col;
+
+	center_row = info->board_size.rows / 2;
+	center_col = info->board_size.cols / 2;
+	return (ft_abs(center_row - row) + ft_abs(center_col - col));
 }

@@ -5,21 +5,18 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/04/01 11:50:25 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 17:05:40 by nsamoilo         ###   ########.fr       */
+/*   Created: 2022/04/07 17:14:12 by nsamoilo          #+#    #+#             */
+/*   Updated: 2022/04/07 17:30:20 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "filler.h"
 
-static int	distance_to_enemy(t_info *info, int check_row, int check_col)
+static void	set_to_max(t_info *info)
 {
-	int	best;
-	int	temp;
 	int	row;
 	int	col;
 
-	best = info->board_size.rows + info->board_size.cols;
 	row = 0;
 	while (row < info->board_size.rows)
 	{
@@ -27,29 +24,38 @@ static int	distance_to_enemy(t_info *info, int check_row, int check_col)
 		while (col < info->board_size.cols)
 		{
 			if (info->board[row][col] == info->enemy)
-			{
-				temp = ft_abs(check_row - row) + ft_abs(check_col - col);
-				if (temp < best)
-					best = temp;
-			}
+				info->heatmap[row][col] = 0;
+			else
+				info->heatmap[row][col] = -1;
 			col++;
 		}
 		row++;
 	}
-	return (best);
 }
 
-static int	distance_to_center(t_info *info, int row, int col)
+static void	set_neighbours(t_info *info, int depth, int row, int col)
 {
-	int	center_row;
-	int	center_col;
+	int	x;
+	int	y;
 
-	center_row = info->board_size.rows / 2;
-	center_col = info->board_size.cols / 2;
-	return (ft_abs(center_row - row) + ft_abs(center_col - col));
+	x = row - 1;
+	while (x <= row + 1)
+	{
+		y = col - 1;
+		while (y <= col + 1)
+		{
+			if (x > 0 && x < info->board_size.rows
+				&& y > 0 && y < info->board_size.cols
+				&& (x != row && y != col)
+				&& info->heatmap[x][y] == -1)
+				info->heatmap[x][y] = depth;
+			y++;
+		}
+		x++;
+	}
 }
 
-void	update_heatmap(t_info *info)
+static void	set_heatmap(t_info *info, int depth)
 {
 	int	row;
 	int	col;
@@ -60,9 +66,26 @@ void	update_heatmap(t_info *info)
 		col = 0;
 		while (col < info->board_size.cols)
 		{
-			if (info->center_row_captured && info->center_captured)
-				info->heatmap[row][col] = distance_to_enemy(info, row, col);
-			else if (info->center_row_captured)
+			if (info->heatmap[row][col] == depth)
+				set_neighbours(info, depth + 1, row, col);
+			col++;
+		}
+		row++;
+	}
+}
+
+static void	go_to_center(t_info *info)
+{
+	int	row;
+	int	col;
+
+	row = 0;
+	while (row < info->board_size.rows)
+	{
+		col = 0;
+		while (col < info->board_size.cols)
+		{
+			if (info->center_row_captured)
 				info->heatmap[row][col] = distance_to_center(info, row, col);
 			else
 				info->heatmap[row][col] = \
@@ -70,5 +93,23 @@ void	update_heatmap(t_info *info)
 			col++;
 		}
 		row++;
+	}
+}
+
+void	update_heatmap(t_info *info)
+{
+	int	depth;
+
+	if (!info->center_captured)
+		go_to_center(info);
+	else
+	{
+		set_to_max(info);
+		depth = 0;
+		while (depth < info->board_size.rows + info->board_size.cols)
+		{
+			set_heatmap(info, depth);
+			depth++;
+		}
 	}
 }

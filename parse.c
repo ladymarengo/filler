@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 17:05:11 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 19:31:39 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ int	parse_number(char last)
 	while (ft_isdigit(temp))
 	{
 		n = n * 10 + (temp - '0');
-		read(STDIN_FILENO, &temp, 1);
+		if (read(STDIN_FILENO, &temp, 1) < 0)
+			return (-1);
 	}
 	return (n);
 }
@@ -35,7 +36,10 @@ int	parse_player(t_info *info)
 
 	temp = '$';
 	while (!ft_isdigit(temp))
-		read(STDIN_FILENO, &temp, 1);
+	{
+		if (read(STDIN_FILENO, &temp, 1) < 0)
+			return (-1);
+	}
 	if (temp == '1')
 	{
 		info->player = 'O';
@@ -54,16 +58,18 @@ int	parse_player(t_info *info)
 int	parse_size(int *rows, int *columns)
 {
 	char	temp;
+	int		status;
 
 	temp = ',';
-	while (!ft_isdigit(temp))
-		read(STDIN_FILENO, &temp, 1);
+	status = 1;
+	while (!ft_isdigit(temp) && status > 0)
+		status = read(STDIN_FILENO, &temp, 1);
 	*rows = parse_number(temp);
-	read(STDIN_FILENO, &temp, 1);
-	while (!ft_isdigit(temp))
-		read(STDIN_FILENO, &temp, 1);
+	status = read(STDIN_FILENO, &temp, 1);
+	while (!ft_isdigit(temp) && status > 0)
+		status = read(STDIN_FILENO, &temp, 1);
 	*columns = parse_number(temp);
-	if (*rows <= 0 || *columns <= 0)
+	if (*rows <= 0 || *columns <= 0 || status == -1)
 		return (-1);
 	return (0);
 }
@@ -74,34 +80,23 @@ int	parse_board(t_info *info)
 	int		column;
 	char	temp[1];
 
-	// FILE *f = fopen("file.txt", "a");
-
-	// fprintf(f, "\n");
-
 	row = 0;
 	while (row < info->board_size.rows)
 	{
 		column = 0;
 		while (column < info->board_size.cols)
 		{
-			read(STDIN_FILENO, temp, 1);
+			if (read(STDIN_FILENO, temp, 1) == -1)
+				return (-1);
 			if (ft_strchr("XxOo.", temp[0]))
 			{
-				if (temp[0] == 'x')
-					info->board[row][column] = 'X';
-				else if (temp[0] == 'o')
-					info->board[row][column] = 'O';
-				else
-					info->board[row][column] = temp[0];
-				// fprintf(f, "%c", info->board[row][column]);
+				info->board[row][column] = parse_char(temp[0]);
 				column++;
 			}
 		}
-		// fprintf(f, "\n");
 		row++;
 	}
 	update_centers(info);
-	// fclose(f);
 	return (0);
 }
 
@@ -111,9 +106,11 @@ int	parse_piece(t_info *info)
 	int		column;
 	char	temp[1];
 
-	info->piece = create_char_array(info);
-	if (parse_size(&info->piece_size.rows, &info->piece_size.cols) == -1
-		|| !info->piece)
+	if (parse_size(&info->piece_size.rows, &info->piece_size.cols) == -1)
+		return (-1);
+	info->piece = create_char_array(info->piece_size.rows, \
+		info->piece_size.cols);
+	if (!info->piece)
 		return (-1);
 	row = 0;
 	while (row < info->piece_size.rows)
@@ -121,12 +118,10 @@ int	parse_piece(t_info *info)
 		column = 0;
 		while (column < info->piece_size.cols)
 		{
-			read(STDIN_FILENO, temp, 1);
+			if (read(STDIN_FILENO, temp, 1) == -1)
+				return (-1);
 			if (ft_strchr("*.", temp[0]))
-			{
-				info->piece[row][column] = temp[0];
-				column++;
-			}
+				info->piece[row][column++] = temp[0];
 		}
 		row++;
 	}
