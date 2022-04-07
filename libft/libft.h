@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/01 12:02:21 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/05 16:28:02 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 14:57:34 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define LIBFT_H
 # include <unistd.h>
 # include <stdlib.h>
+# include <inttypes.h>
 # include <string.h>
 # include "ft_printf_src/ft_printf.h"
 

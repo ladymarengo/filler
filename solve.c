@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/25 14:10:08 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/06 12:49:07 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 15:48:09 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,21 +49,21 @@ static int	fit_piece(t_info *info, t_coord board, t_coord piece)
 	int		col;
 	t_coord	temp;
 
-	row = -1;
-	while (row++ < info->piece_size.rows - 1)
+	row = info->piece_start.row - 1;
+	while (row++ <= info->piece_end.row - 1)
 	{
-		col = -1;
-		while (col++ < info->piece_size.cols - 1)
+		col = info->piece_start.col - 1;
+		while (col++ <= info->piece_end.col - 1)
 		{
 			temp = calculate_offset(row, col, piece, board);
-			if (info->piece[row][col] == '*'
-				&& invalid_point(info, temp.row, temp.col))
-				return (-1);
-			if (info->piece[row][col] == '*'
-				&& ft_toupper(info->board[temp.row][temp.col]) == info->player)
-				info->connections++;
 			if (info->piece[row][col] == '*')
+			{
+				if (invalid_point(info, temp.row, temp.col))
+					return (-1);
+				if (ft_toupper(info->board[temp.row][temp.col]) == info->player)
+					info->connections++;
 				info->temp_val += info->heatmap[temp.row][temp.col];
+			}
 		}
 	}
 	if (info->connections == 1)
@@ -78,11 +78,11 @@ static void	place_piece(t_info *info, t_coord board_coord)
 	int		temp_value;
 	t_coord	piece_coord;
 
-	piece_row = 0;
-	while (piece_row < info->piece_size.rows)
+	piece_row = info->piece_start.row;
+	while (piece_row <= info->piece_end.row)
 	{
-		piece_col = -1;
-		while (piece_col++ < info->piece_size.cols - 1)
+		piece_col = info->piece_start.col - 1;
+		while (piece_col++ <= info->piece_end.col - 1)
 		{
 			if (info->piece[piece_row][piece_col] == '*')
 			{

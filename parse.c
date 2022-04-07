@@ -6,7 +6,7 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/21 13:07:04 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/06 12:55:04 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 15:10:41 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,8 @@ int	parse_board(t_info *info)
 		}
 		row++;
 	}
+	info->center_captured = center_is_captured(info);
+	info->center_row_captured = center_row_is_captured(info);
 	return (0);
 }
 

@@ -6,47 +6,11 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/01 11:50:25 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/05 16:29:26 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/07 15:11:24 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "filler.h"
-
-static bool	center_is_captured(t_info *info)
-{
-	int	row;
-	int	col;
-
-	row = info->board_size.rows / 2;
-	col = info->board_size.cols / 2;
-	while (row <= info->board_size.rows / 2 + 1)
-	{
-		while (col <= info->board_size.cols / 2 + 1)
-		{
-			if (info->board[row][col] != '.')
-				return (true);
-			col++;
-		}
-		row++;
-	}
-	return (false);
-}
-
-static bool	center_row_is_captured(t_info *info)
-{
-	int	row;
-	int	col;
-
-	row = info->board_size.rows / 2;
-	col = 0;
-	while (col < info->board_size.cols)
-	{
-		if (ft_toupper(info->board[row][col]) == info->player)
-			return (true);
-		col++;
-	}
-	return (false);
-}
 
 static int	distance_to_enemy(t_info *info, int check_row, int check_col)
 {
@@ -96,9 +60,9 @@ void	update_heatmap(t_info *info)
 		col = 0;
 		while (col < info->board_size.cols)
 		{
-			if (center_row_is_captured(info) && center_is_captured(info))
+			if (info->center_row_captured && info->center_captured)
 				info->heatmap[row][col] = distance_to_enemy(info, row, col);
-			else if (center_row_is_captured(info))
+			else if (info->center_row_captured)
 				info->heatmap[row][col] = distance_to_center(info, row, col);
 			else
 				info->heatmap[row][col] = \
