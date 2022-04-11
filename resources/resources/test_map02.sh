@@ -46,6 +46,8 @@ echo "3"
 echo "" >> trace_map02
 
 echo "GRATI"
+
+echo "Nsamoilo against Grati map02\n" >> trace_map02
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/grati.filler > trace_grati1
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/grati.filler > trace_grati2
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/grati.filler > trace_grati3
@@ -58,6 +60,8 @@ echo "3"
 echo "" >> trace_map02
 
 echo "CARLI"
+
+echo "Nsamoilo against Carli map02\n" >> trace_map02
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/carli.filler > trace_carli1
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/carli.filler > trace_carli2
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/carli.filler > trace_carli3
@@ -70,6 +74,8 @@ echo "3"
 echo "" >> trace_map02
 
 echo "SUPERJEANNOT"
+
+echo "Nsamoilo against Superjeannot map02\n" >> trace_map02
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/superjeannot.filler > trace_superjeannot1
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/superjeannot.filler > trace_superjeannot2
 ./filler_vm -p1 ../../nsamoilo.filler -v -f maps/map02 -p2 players/superjeannot.filler > trace_superjeannot3
