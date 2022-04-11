@@ -1,9 +1,13 @@
+use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use regex::Regex;
 use std::{env, fs::read_to_string};
 
 const WIDTH: f32 = 800.0;
 const HEIGHT: f32 = 600.0;
+const START_BOARD: (f32, f32) = (-370.0, 270.0);
+const END_BOARD: (f32, f32) = (HEIGHT / 2.0 - 30.0, HEIGHT / 2.0 - 30.0);
+const TIMESTEP: f64 = 5.0 / 60.0;
 
 fn main() {
     App::new()
@@ -22,7 +26,15 @@ fn main() {
             boards: Vec::new(),
             pieces: Vec::new(),
         })
-        .add_startup_system(parse_trace)
+        .insert_resource(Turn(0))
+        .add_startup_system(parse_trace.label("parse"))
+        .add_startup_system(spawn_camera.label("camera").after("parse"))
+        .add_startup_system(update_screen.after("camera"))
+		.add_system_set(
+            SystemSet::new()
+                .with_run_criteria(FixedTimestep::step(TIMESTEP))
+                .with_system(next_turn)
+		)
         .run()
 }
 
@@ -92,6 +104,69 @@ fn parse_trace(mut trace: ResMut<Trace>) {
     trace.pieces = pieces;
 }
 
+fn spawn_camera(mut commands: Commands) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+}
+
+fn update_screen(
+    turn: ResMut<Turn>,
+    mut commands: Commands,
+    old: Query<Entity, With<Cell>>,
+    trace: Res<Trace>,
+) {
+    for e in old.iter() {
+        commands.entity(e).despawn_recursive();
+    }
+
+    let side = (HEIGHT - 60.0) / trace.boards[0].len() as f32;
+    // dbg!(trace.boards[0][0].len());
+    // dbg!(trace.boards[0].len());
+    for (r, row) in trace.boards[turn.0].iter().enumerate() {
+        for (c, col) in row.iter().enumerate() {
+            let color = match *col {
+                BoardCell::Empty => Color::WHITE,
+                BoardCell::First => Color::GREEN,
+                BoardCell::Second => Color::BLUE,
+            };
+            // dbg!(START_BOARD.0 + side * c as f32);
+            // dbg!(START_BOARD.1 - side * r as f32);
+            commands
+                .spawn_bundle(SpriteBundle {
+                    transform: Transform {
+                        translation: Vec3::new(
+                            START_BOARD.0 + side * c as f32,
+                            START_BOARD.1 - side * r as f32,
+                            0.0,
+                        ),
+                        scale: Vec3::new(side, side, 1.0),
+                        ..Default::default()
+                    },
+                    sprite: Sprite {
+                        color: color,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(Cell);
+        }
+    }
+}
+
+fn next_turn(
+    mut turn: ResMut<Turn>,
+    mut commands: Commands,
+    trace: Res<Trace>,
+    current: Query<Entity, With<Cell>>,
+) {
+	if turn.0 < trace.boards.len() - 1 {
+		turn.0 += 1;
+	} else {
+		turn.0 = 0;
+	}
+	
+	update_screen(turn, commands, current, trace);
+}
+
 #[derive(Debug)]
 struct Trace {
     first_player: String,
@@ -112,3 +187,8 @@ enum PieceCell {
     Empty,
     Filled,
 }
+
+struct Turn(usize);
+
+#[derive(Component)]
+struct Cell;
