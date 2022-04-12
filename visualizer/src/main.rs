@@ -6,7 +6,6 @@ use std::{env, fs::read_to_string};
 const WIDTH: f32 = 800.0;
 const HEIGHT: f32 = 600.0;
 const START_BOARD: (f32, f32) = (-370.0, 270.0);
-const END_BOARD: (f32, f32) = (HEIGHT / 2.0 - 30.0, HEIGHT / 2.0 - 30.0);
 const TIMESTEP: f64 = 5.0 / 60.0;
 
 fn main() {
@@ -27,14 +26,16 @@ fn main() {
             pieces: Vec::new(),
         })
         .insert_resource(Turn(0))
+        .insert_resource(Play(false))
         .add_startup_system(parse_trace.label("parse"))
         .add_startup_system(spawn_camera.label("camera").after("parse"))
-        .add_startup_system(update_screen.after("camera"))
-		.add_system_set(
+        .add_startup_system(spawn_start.after("camera"))
+        .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(TIMESTEP))
-                .with_system(next_turn)
-		)
+                .with_system(next_turn),
+        )
+        .add_system(handle_input)
         .run()
 }
 
@@ -109,18 +110,16 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn update_screen(
-    turn: ResMut<Turn>,
-    mut commands: Commands,
-    old: Query<Entity, With<Cell>>,
-    trace: Res<Trace>,
+    turn: &mut ResMut<Turn>,
+    commands: &mut Commands,
+    old: &Query<Entity, With<Cell>>,
+    trace: &Res<Trace>,
 ) {
     for e in old.iter() {
         commands.entity(e).despawn_recursive();
     }
 
     let side = (HEIGHT - 60.0) / trace.boards[0].len() as f32;
-    // dbg!(trace.boards[0][0].len());
-    // dbg!(trace.boards[0].len());
     for (r, row) in trace.boards[turn.0].iter().enumerate() {
         for (c, col) in row.iter().enumerate() {
             let color = match *col {
@@ -128,8 +127,6 @@ fn update_screen(
                 BoardCell::First => Color::GREEN,
                 BoardCell::Second => Color::BLUE,
             };
-            // dbg!(START_BOARD.0 + side * c as f32);
-            // dbg!(START_BOARD.1 - side * r as f32);
             commands
                 .spawn_bundle(SpriteBundle {
                     transform: Transform {
@@ -152,19 +149,71 @@ fn update_screen(
     }
 }
 
-fn next_turn(
+fn spawn_start(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
     current: Query<Entity, With<Cell>>,
 ) {
-	if turn.0 < trace.boards.len() - 1 {
-		turn.0 += 1;
-	} else {
-		turn.0 = 0;
-	}
-	
-	update_screen(turn, commands, current, trace);
+    update_screen(&mut turn, &mut commands, &current, &trace);
+}
+
+fn next_turn(
+    play: Res<Play>,
+    mut turn: ResMut<Turn>,
+    mut commands: Commands,
+    trace: Res<Trace>,
+    current: Query<Entity, With<Cell>>,
+) {
+    if play.0 {
+        if turn.0 < trace.boards.len() - 1 {
+            turn.0 += 1;
+        } else {
+            turn.0 = 0;
+        }
+
+        update_screen(&mut turn, &mut commands, &current, &trace);
+    }
+}
+
+fn handle_input(
+    keys: Res<Input<KeyCode>>,
+    mut play: ResMut<Play>,
+    mut turn: ResMut<Turn>,
+    mut commands: Commands,
+    trace: Res<Trace>,
+    current: Query<Entity, With<Cell>>,
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        match play.0 {
+            true => play.0 = false,
+            false => play.0 = true,
+        }
+    }
+    if keys.just_pressed(KeyCode::Right) {
+        play.0 = false;
+        if turn.0 < trace.boards.len() - 1 {
+            turn.0 += 1;
+        }
+        update_screen(&mut turn, &mut commands, &current, &trace);
+    }
+    if keys.just_pressed(KeyCode::Left) {
+        play.0 = false;
+        if turn.0 > 0 {
+            turn.0 -= 1;
+        }
+        update_screen(&mut turn, &mut commands, &current, &trace);
+    }
+    if keys.just_pressed(KeyCode::S) {
+        play.0 = false;
+        turn.0 = 0;
+        update_screen(&mut turn, &mut commands, &current, &trace);
+    }
+    if keys.just_pressed(KeyCode::E) {
+        play.0 = false;
+        turn.0 = trace.boards.len() - 1;
+        update_screen(&mut turn, &mut commands, &current, &trace);
+    }
 }
 
 #[derive(Debug)]
@@ -192,3 +241,5 @@ struct Turn(usize);
 
 #[derive(Component)]
 struct Cell;
+
+struct Play(bool);
