@@ -130,7 +130,11 @@ fn update_screen(
         for (c, col) in row.iter().enumerate() {
             let color;
 
-            if onscreen.0[r][c].is_some() {
+            if let Some(e) = onscreen.0[r][c] {
+                if let BoardCell::Empty = col {
+                    commands.entity(e).despawn();
+                    onscreen.0[r][c] = None;
+                }
                 continue;
             }
 
@@ -173,21 +177,6 @@ fn spawn_start(
     mut onscreen: ResMut<OnScreen>,
 ) {
     update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
-}
-
-fn clean_screen(
-    commands: &mut Commands,
-    old: &Query<Entity, With<Cell>>,
-    onscreen: &mut ResMut<OnScreen>,
-) {
-    for e in old.iter() {
-        commands.entity(e).despawn_recursive();
-    }
-    for i in 0..onscreen.0.len() {
-        for j in 0..onscreen.0[0].len() {
-            onscreen.0[i][j] = None;
-        }
-    }
 }
 
 fn next_turn(
@@ -233,7 +222,6 @@ fn handle_input(
         update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
     }
     if keys.just_pressed(KeyCode::Left) {
-        clean_screen(&mut commands, &current, &mut onscreen);
         play.0 = false;
         if turn.0 > 0 {
             turn.0 -= 1;
@@ -241,7 +229,6 @@ fn handle_input(
         update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
     }
     if keys.just_pressed(KeyCode::S) {
-        clean_screen(&mut commands, &current, &mut onscreen);
         play.0 = false;
         turn.0 = 0;
         update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
