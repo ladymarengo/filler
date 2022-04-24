@@ -28,7 +28,7 @@ fn main() {
         .insert_resource(Turn(0))
         .insert_resource(Play(false))
         .insert_resource(Speed(3))
-		.insert_resource(OnScreen(Vec::new()))
+        .insert_resource(OnScreen(Vec::new()))
         .add_startup_system(parse_trace.label("parse"))
         .add_startup_system(spawn_camera.label("camera").after("parse"))
         .add_startup_system(spawn_start.after("camera"))
@@ -106,13 +106,13 @@ fn parse_trace(mut trace: ResMut<Trace>, mut onscreen: ResMut<OnScreen>) {
     trace.boards = boards;
     trace.pieces = pieces;
 
-	for _i in 0..trace.boards[0].len() {
-		let mut new: Vec<bool> = Vec::new();
-		for _j in 0..trace.boards[0][0].len() {
-			new.push(false);
-		}
-		onscreen.0.push(new);
-	}
+    for _i in 0..trace.boards[0].len() {
+        let mut new = Vec::new();
+        for _j in 0..trace.boards[0][0].len() {
+            new.push(None);
+        }
+        onscreen.0.push(new);
+    }
 }
 
 fn spawn_camera(mut commands: Commands) {
@@ -123,68 +123,71 @@ fn update_screen(
     turn: &mut ResMut<Turn>,
     commands: &mut Commands,
     trace: &Res<Trace>,
-	onscreen: &mut ResMut<OnScreen>,
+    onscreen: &mut ResMut<OnScreen>,
 ) {
-
     let side = (HEIGHT - 60.0) / max(trace.boards[0].len(), trace.boards[0][0].len()) as f32;
     for (r, row) in trace.boards[turn.0].iter().enumerate() {
         for (c, col) in row.iter().enumerate() {
+            let color;
 
-			let color;
+            if onscreen.0[r][c].is_some() {
+                continue;
+            }
 
-			if onscreen.0[r][c] {
-				continue;
-			}
+            match *col {
+                BoardCell::Empty => continue,
+                BoardCell::First => color = Color::GREEN,
+                BoardCell::Second => color = Color::BLUE,
+            };
 
-			match *col {
-				BoardCell::Empty => continue,
-				BoardCell::First => color = Color::GREEN,
-				BoardCell::Second => color = Color::BLUE,
-			};
-
-			onscreen.0[r][c] = true;
-
-			commands
-				.spawn_bundle(SpriteBundle {
-					transform: Transform {
-						translation: Vec3::new(
-							START_BOARD.0 + side * c as f32,
-							START_BOARD.1 - side * r as f32,
-							0.0,
-						),
-						scale: Vec3::new(side, side, 1.0),
-						..Default::default()
-					},
-					sprite: Sprite {
-						color: color,
-						..Default::default()
-					},
-					..Default::default()
-				})
-				.insert(Cell);
+            onscreen.0[r][c] = Some(
+                commands
+                    .spawn_bundle(SpriteBundle {
+                        transform: Transform {
+                            translation: Vec3::new(
+                                START_BOARD.0 + side * c as f32,
+                                START_BOARD.1 - side * r as f32,
+                                0.0,
+                            ),
+                            scale: Vec3::new(side, side, 1.0),
+                            ..Default::default()
+                        },
+                        sprite: Sprite {
+                            color,
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    })
+                    .insert(Cell)
+                    .id(),
+            );
         }
     }
-	// dbg!(&onscreen.0);
+    // dbg!(&onscreen.0);
 }
 
 fn spawn_start(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
-	mut onscreen: ResMut<OnScreen>,
+    mut onscreen: ResMut<OnScreen>,
 ) {
     update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
 }
 
-fn clean_screen(commands: &mut Commands, old: &Query<Entity, With<Cell>>, onscreen: &mut ResMut<OnScreen>) {
-	for e in old.iter() {
+fn clean_screen(
+    commands: &mut Commands,
+    old: &Query<Entity, With<Cell>>,
+    onscreen: &mut ResMut<OnScreen>,
+) {
+    for e in old.iter() {
         commands.entity(e).despawn_recursive();
     }
-	for i in 0..onscreen.0.len() {
-		for j in 0..onscreen.0[0].len() {
-			onscreen.0[i][j] = false;
-		}
-	}
+    for i in 0..onscreen.0.len() {
+        for j in 0..onscreen.0[0].len() {
+            onscreen.0[i][j] = None;
+        }
+    }
 }
 
 fn next_turn(
@@ -193,7 +196,7 @@ fn next_turn(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
-	mut onscreen: ResMut<OnScreen>,
+    mut onscreen: ResMut<OnScreen>,
 ) {
     if play.0 {
         if turn.0 + speed.0 < trace.boards.len() {
@@ -214,7 +217,7 @@ fn handle_input(
     mut commands: Commands,
     trace: Res<Trace>,
     current: Query<Entity, With<Cell>>,
-	mut onscreen: ResMut<OnScreen>,
+    mut onscreen: ResMut<OnScreen>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         match play.0 {
@@ -230,7 +233,7 @@ fn handle_input(
         update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
     }
     if keys.just_pressed(KeyCode::Left) {
-		clean_screen(&mut commands, &current, &mut onscreen);
+        clean_screen(&mut commands, &current, &mut onscreen);
         play.0 = false;
         if turn.0 > 0 {
             turn.0 -= 1;
@@ -238,7 +241,7 @@ fn handle_input(
         update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
     }
     if keys.just_pressed(KeyCode::S) {
-		clean_screen(&mut commands, &current, &mut onscreen);
+        clean_screen(&mut commands, &current, &mut onscreen);
         play.0 = false;
         turn.0 = 0;
         update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
@@ -288,4 +291,4 @@ struct Play(bool);
 
 struct Speed(usize);
 
-struct OnScreen(Vec<Vec<bool>>);
+struct OnScreen(Vec<Vec<Option<Entity>>>);
