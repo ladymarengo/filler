@@ -126,6 +126,11 @@ fn update_screen(
     onscreen: &mut ResMut<OnScreen>,
 ) {
     let side = (HEIGHT - 60.0) / max(trace.boards[0].len(), trace.boards[0][0].len()) as f32;
+
+    let random_offset = || (rand::random::<f32>() - 0.5) / 5.0;
+    let hued_blue = Color::hsl(216.0, 0.68 + random_offset(), 0.59 + random_offset());
+    let hued_red = Color::hsl(0.0, 0.67 + random_offset(), 0.63 + random_offset());
+
     for (r, row) in trace.boards[turn.0].iter().enumerate() {
         for (c, col) in row.iter().enumerate() {
             let color;
@@ -140,8 +145,8 @@ fn update_screen(
 
             match *col {
                 BoardCell::Empty => continue,
-                BoardCell::First => color = Color::GREEN,
-                BoardCell::Second => color = Color::BLUE,
+                BoardCell::First => color = hued_blue,
+                BoardCell::Second => color = hued_red,
             };
 
             onscreen.0[r][c] = Some(
@@ -188,13 +193,12 @@ fn next_turn(
     mut onscreen: ResMut<OnScreen>,
 ) {
     if play.0 {
-        if turn.0 + speed.0 < trace.boards.len() {
-            turn.0 += speed.0;
-        } else {
-            turn.0 = 0;
+        for _ in 0..speed.0 {
+            if turn.0 + 1 < trace.boards.len() {
+                turn.0 += 1;
+            }
+            update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
         }
-
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
     }
 }
 
@@ -235,8 +239,10 @@ fn handle_input(
     }
     if keys.just_pressed(KeyCode::E) {
         play.0 = false;
-        turn.0 = trace.boards.len() - 1;
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        for t in turn.0..trace.boards.len() {
+            turn.0 = t;
+            update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        }
     }
     if keys.just_pressed(KeyCode::Up) {
         speed.0 += 1;
