@@ -7,6 +7,7 @@ const WIDTH: f32 = 800.0;
 const HEIGHT: f32 = 600.0;
 const START_BOARD: (f32, f32) = (-370.0, 270.0);
 const TIMESTEP: f64 = 5.0 / 60.0;
+const BOARD_SIZE: f32 = HEIGHT - 40.0;
 
 fn main() {
     App::new()
@@ -19,17 +20,11 @@ fn main() {
         .insert_resource(ClearColor(Color::ANTIQUE_WHITE))
         .add_plugins(DefaultPlugins)
         .add_system(bevy::input::system::exit_on_esc_system)
-        .insert_resource(Trace {
-            first_player: "".to_string(),
-            second_player: "".to_string(),
-            boards: Vec::new(),
-            pieces: Vec::new(),
-        })
         .insert_resource(Turn(0))
         .insert_resource(Play(false))
         .insert_resource(Speed(3))
         .insert_resource(OnScreen(Vec::new()))
-        .add_startup_system(parse_trace.label("parse"))
+        .add_startup_system_to_stage(StartupStage::PreStartup, parse_trace.label("parse"))
         .add_startup_system(spawn_camera.label("camera").after("parse"))
         .add_startup_system(spawn_start.after("camera"))
         .add_system_set(
@@ -41,7 +36,7 @@ fn main() {
         .run()
 }
 
-fn parse_trace(mut trace: ResMut<Trace>, mut onscreen: ResMut<OnScreen>) {
+fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
     let args: Vec<String> = env::args().collect();
     let file = &args[1];
 
@@ -101,10 +96,31 @@ fn parse_trace(mut trace: ResMut<Trace>, mut onscreen: ResMut<OnScreen>) {
         pieces.push(new_piece);
     }
 
-    trace.first_player = players.get(1).unwrap().as_str().to_string();
-    trace.second_player = players.get(2).unwrap().as_str().to_string();
-    trace.boards = boards;
-    trace.pieces = pieces;
+    let board_width = boards[0][0].len() as f32;
+    let board_height = boards[0].len() as f32;
+    let side;
+    let final_width;
+    let final_height;
+
+    if board_width > board_height {
+        final_width = BOARD_SIZE;
+        side = BOARD_SIZE / board_width;
+        final_height = board_height * side;
+    } else {
+        final_height = BOARD_SIZE;
+        side = BOARD_SIZE / board_height;
+        final_width = board_width * side;
+    }
+
+    let trace = Trace {
+        first_player: players.get(1).unwrap().as_str().to_string(),
+        second_player: players.get(2).unwrap().as_str().to_string(),
+        boards,
+        pieces,
+        width: final_width,
+        height: final_height,
+        side,
+    };
 
     for _i in 0..trace.boards[0].len() {
         let mut new = Vec::new();
@@ -113,6 +129,8 @@ fn parse_trace(mut trace: ResMut<Trace>, mut onscreen: ResMut<OnScreen>) {
         }
         onscreen.0.push(new);
     }
+
+    commands.insert_resource(trace);
 }
 
 fn spawn_camera(mut commands: Commands) {
@@ -125,12 +143,20 @@ fn update_screen(
     trace: &Res<Trace>,
     onscreen: &mut ResMut<OnScreen>,
 ) {
-    let side = (HEIGHT - 60.0) / max(trace.boards[0].len(), trace.boards[0][0].len()) as f32;
+    update_board(trace, turn, onscreen, commands);
+    update_next_piece(trace, turn, onscreen, commands);
+    // dbg!(&onscreen.0);
+}
 
+fn update_board(
+    trace: &Res<Trace>,
+    turn: &mut ResMut<Turn>,
+    onscreen: &mut ResMut<OnScreen>,
+    commands: &mut Commands,
+) {
     let random_offset = || (rand::random::<f32>() - 0.5) / 5.0;
     let hued_blue = Color::hsl(216.0, 0.68 + random_offset(), 0.59 + random_offset());
     let hued_red = Color::hsl(0.0, 0.67 + random_offset(), 0.63 + random_offset());
-
     for (r, row) in trace.boards[turn.0].iter().enumerate() {
         for (c, col) in row.iter().enumerate() {
             let color;
@@ -154,11 +180,11 @@ fn update_screen(
                     .spawn_bundle(SpriteBundle {
                         transform: Transform {
                             translation: Vec3::new(
-                                START_BOARD.0 + side * c as f32,
-                                START_BOARD.1 - side * r as f32,
+                                START_BOARD.0 + trace.side * c as f32,
+                                START_BOARD.1 - trace.side * r as f32,
                                 0.0,
                             ),
-                            scale: Vec3::new(side, side, 1.0),
+                            scale: Vec3::new(trace.side, trace.side, 1.0),
                             ..Default::default()
                         },
                         sprite: Sprite {
@@ -172,7 +198,58 @@ fn update_screen(
             );
         }
     }
-    // dbg!(&onscreen.0);
+}
+
+fn update_next_piece(
+    trace: &Res<Trace>,
+    turn: &mut ResMut<Turn>,
+    onscreen: &mut ResMut<OnScreen>,
+    commands: &mut Commands,
+) {
+    // let board_piece_side = (HEIGHT - 60.0) / max(trace.boards[0].len(), trace.boards[0][0].len()) as f32;
+
+    // // let piece_offset = HEIGHT - 60.0 + 5.0;
+    // for (r, row) in trace.boards[turn.0].iter().enumerate() {
+    //     for (c, col) in row.iter().enumerate() {
+    //         let color;
+
+    //         if let Some(e) = onscreen.0[r][c] {
+    //             if let BoardCell::Empty = col {
+    //                 commands.entity(e).despawn();
+    //                 onscreen.0[r][c] = None;
+    //             }
+    //             continue;
+    //         }
+
+    //         match *col {
+    //             BoardCell::Empty => continue,
+    //             BoardCell::First => color = hued_blue,
+    //             BoardCell::Second => color = hued_red,
+    //         };
+
+    //         onscreen.0[r][c] = Some(
+    //             commands
+    //                 .spawn_bundle(SpriteBundle {
+    //                     transform: Transform {
+    //                         translation: Vec3::new(
+    //                             START_BOARD.0 + board_piece_side * c as f32,
+    //                             START_BOARD.1 - board_piece_side * r as f32,
+    //                             0.0,
+    //                         ),
+    //                         scale: Vec3::new(board_piece_side, board_piece_side, 1.0),
+    //                         ..Default::default()
+    //                     },
+    //                     sprite: Sprite {
+    //                         color,
+    //                         ..Default::default()
+    //                     },
+    //                     ..Default::default()
+    //                 })
+    //                 .insert(Cell)
+    //                 .id(),
+    //         );
+    //     }
+    // }
 }
 
 fn spawn_start(
@@ -260,6 +337,9 @@ struct Trace {
     second_player: String,
     boards: Vec<Vec<Vec<BoardCell>>>,
     pieces: Vec<Vec<Vec<PieceCell>>>,
+    width: f32,
+    height: f32,
+    side: f32,
 }
 
 #[derive(Debug)]
