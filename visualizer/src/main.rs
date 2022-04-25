@@ -5,9 +5,10 @@ use std::{cmp::max, env, fs::read_to_string};
 
 const WIDTH: f32 = 800.0;
 const HEIGHT: f32 = 600.0;
-const START_BOARD: (f32, f32) = (-370.0, 270.0);
 const TIMESTEP: f64 = 5.0 / 60.0;
 const BOARD_SIZE: f32 = HEIGHT - 40.0;
+
+struct StartBoard(f32, f32);
 
 fn main() {
     App::new()
@@ -24,8 +25,8 @@ fn main() {
         .insert_resource(Play(false))
         .insert_resource(Speed(3))
         .insert_resource(OnScreen(Vec::new()))
-        .add_startup_system_to_stage(StartupStage::PreStartup, parse_trace.label("parse"))
-        .add_startup_system(spawn_camera.label("camera").after("parse"))
+        .add_startup_system_to_stage(StartupStage::PreStartup, parse_trace)
+        .add_startup_system(spawn_camera.label("camera"))
         .add_startup_system(spawn_start.after("camera"))
         .add_system_set(
             SystemSet::new()
@@ -130,6 +131,12 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
         onscreen.0.push(new);
     }
 
+    let center_offset_x = - (WIDTH - HEIGHT) / 2.0 - trace.width / 2.0;
+
+    commands.insert_resource(StartBoard(
+        center_offset_x,
+        (trace.height / 2.0),
+    ));
     commands.insert_resource(trace);
 }
 
@@ -142,8 +149,9 @@ fn update_screen(
     commands: &mut Commands,
     trace: &Res<Trace>,
     onscreen: &mut ResMut<OnScreen>,
+    start_board: &Res<StartBoard>,
 ) {
-    update_board(trace, turn, onscreen, commands);
+    update_board(trace, turn, onscreen, start_board, commands);
     update_next_piece(trace, turn, onscreen, commands);
     // dbg!(&onscreen.0);
 }
@@ -152,6 +160,7 @@ fn update_board(
     trace: &Res<Trace>,
     turn: &mut ResMut<Turn>,
     onscreen: &mut ResMut<OnScreen>,
+    start_board: &Res<StartBoard>,
     commands: &mut Commands,
 ) {
     let random_offset = || (rand::random::<f32>() - 0.5) / 5.0;
@@ -180,8 +189,8 @@ fn update_board(
                     .spawn_bundle(SpriteBundle {
                         transform: Transform {
                             translation: Vec3::new(
-                                START_BOARD.0 + trace.side * c as f32,
-                                START_BOARD.1 - trace.side * r as f32,
+                                start_board.0 + trace.side * c as f32,
+                                start_board.1 - trace.side * r as f32,
                                 0.0,
                             ),
                             scale: Vec3::new(trace.side, trace.side, 1.0),
@@ -257,8 +266,15 @@ fn spawn_start(
     mut commands: Commands,
     trace: Res<Trace>,
     mut onscreen: ResMut<OnScreen>,
+    start_board: Res<StartBoard>,
 ) {
-    update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+    update_screen(
+        &mut turn,
+        &mut commands,
+        &trace,
+        &mut onscreen,
+        &start_board,
+    );
 }
 
 fn next_turn(
@@ -268,13 +284,20 @@ fn next_turn(
     mut commands: Commands,
     trace: Res<Trace>,
     mut onscreen: ResMut<OnScreen>,
+    start_board: Res<StartBoard>,
 ) {
     if play.0 {
         for _ in 0..speed.0 {
             if turn.0 + 1 < trace.boards.len() {
                 turn.0 += 1;
             }
-            update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+            update_screen(
+                &mut turn,
+                &mut commands,
+                &trace,
+                &mut onscreen,
+                &start_board,
+            );
         }
     }
 }
@@ -288,6 +311,7 @@ fn handle_input(
     trace: Res<Trace>,
     current: Query<Entity, With<Cell>>,
     mut onscreen: ResMut<OnScreen>,
+    start_board: Res<StartBoard>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         match play.0 {
@@ -300,25 +324,49 @@ fn handle_input(
         if turn.0 < trace.boards.len() - 1 {
             turn.0 += 1;
         }
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        update_screen(
+            &mut turn,
+            &mut commands,
+            &trace,
+            &mut onscreen,
+            &start_board,
+        );
     }
     if keys.just_pressed(KeyCode::Left) {
         play.0 = false;
         if turn.0 > 0 {
             turn.0 -= 1;
         }
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        update_screen(
+            &mut turn,
+            &mut commands,
+            &trace,
+            &mut onscreen,
+            &start_board,
+        );
     }
     if keys.just_pressed(KeyCode::S) {
         play.0 = false;
         turn.0 = 0;
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        update_screen(
+            &mut turn,
+            &mut commands,
+            &trace,
+            &mut onscreen,
+            &start_board,
+        );
     }
     if keys.just_pressed(KeyCode::E) {
         play.0 = false;
         for t in turn.0..trace.boards.len() {
             turn.0 = t;
-            update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+            update_screen(
+                &mut turn,
+                &mut commands,
+                &trace,
+                &mut onscreen,
+                &start_board,
+            );
         }
     }
     if keys.just_pressed(KeyCode::Up) {
