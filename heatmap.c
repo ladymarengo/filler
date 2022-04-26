@@ -6,13 +6,13 @@
 /*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/07 17:14:12 by nsamoilo          #+#    #+#             */
-/*   Updated: 2022/04/07 17:30:20 by nsamoilo         ###   ########.fr       */
+/*   Updated: 2022/04/26 15:18:37 by nsamoilo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "filler.h"
 
-static void	set_to_max(t_info *info)
+static void	reset_heatmap(t_info *info)
 {
 	int	row;
 	int	col;
@@ -104,7 +104,7 @@ void	update_heatmap(t_info *info)
 		go_to_center(info);
 	else
 	{
-		set_to_max(info);
+		reset_heatmap(info);
 		depth = 0;
 		while (depth < info->board_size.rows + info->board_size.cols)
 		{
