@@ -1,7 +1,7 @@
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use regex::Regex;
-use std::{cmp::max, env, fs::read_to_string};
+use std::{env, fs::read_to_string};
 
 const WIDTH: f32 = 900.0;
 const HEIGHT: f32 = 600.0;
@@ -52,11 +52,9 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
     let players = re.captures(&input[0]).unwrap();
 
     let mut boards: Vec<Vec<Vec<BoardCell>>> = Vec::new();
-    let mut pieces: Vec<Vec<Vec<PieceCell>>> = Vec::new();
 
     for board in &input[1..] {
         let mut new_board: Vec<Vec<BoardCell>> = Vec::new();
-        let mut new_piece: Vec<Vec<PieceCell>> = Vec::new();
         let parts: Vec<String> = board.split("Piece").map(|l| l.to_string()).collect();
 
         let board_rows: Vec<String> = parts[0].split('\n').map(|l| l.to_string()).collect();
@@ -79,23 +77,6 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
             }
         }
         boards.push(new_board);
-
-        let piece_rows: Vec<String> = parts[1].split('\n').map(|l| l.to_string()).collect();
-
-        for row in piece_rows {
-            if row.chars().any(|x| x == '.' || x == '*') {
-                let mut new_row: Vec<PieceCell> = Vec::new();
-                for c in row.chars() {
-                    match c {
-                        '.' => new_row.push(PieceCell::Empty),
-                        '*' => new_row.push(PieceCell::Filled),
-                        _ => (),
-                    }
-                }
-                new_piece.push(new_row);
-            }
-        }
-        pieces.push(new_piece);
     }
 
     let board_width = boards[0][0].len() as f32;
@@ -118,7 +99,6 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
         first_player: players.get(1).unwrap().as_str().to_string(),
         second_player: players.get(2).unwrap().as_str().to_string(),
         boards,
-        pieces,
         width: final_width,
         height: final_height,
         side,
@@ -134,7 +114,7 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
 
     let center_offset_x = -(WIDTH - HEIGHT) / 2.0 - trace.width / 2.0;
 
-    commands.insert_resource(StartBoard(center_offset_x, (trace.height / 2.0)));
+    commands.insert_resource(StartBoard(center_offset_x, trace.height / 2.0));
     commands.insert_resource(trace);
 }
 
@@ -463,7 +443,6 @@ fn handle_input(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
-    current: Query<Entity, With<Cell>>,
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
     mut text: Query<(
@@ -548,7 +527,6 @@ struct Trace {
     first_player: String,
     second_player: String,
     boards: Vec<Vec<Vec<BoardCell>>>,
-    pieces: Vec<Vec<Vec<PieceCell>>>,
     width: f32,
     height: f32,
     side: f32,
@@ -559,12 +537,6 @@ enum BoardCell {
     Empty,
     First,
     Second,
-}
-
-#[derive(Debug)]
-enum PieceCell {
-    Empty,
-    Filled,
 }
 
 struct Turn(usize);
