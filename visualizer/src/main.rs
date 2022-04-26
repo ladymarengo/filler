@@ -28,6 +28,7 @@ fn main() {
         .add_startup_system_to_stage(StartupStage::PreStartup, parse_trace)
         .add_startup_system(spawn_camera.label("camera"))
         .add_startup_system(spawn_start.after("camera"))
+		.add_startup_system(spawn_hud)
         .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(TIMESTEP))
@@ -133,11 +134,6 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
 
     let center_offset_x = - (WIDTH - HEIGHT) / 2.0 - trace.width / 2.0;
 
-	// dbg!(&trace.width);
-	// dbg!(&trace.height);
-	// dbg!(&trace.side);
-	// dbg!(&center_offset_x);
-
     commands.insert_resource(StartBoard(
         center_offset_x,
         (trace.height / 2.0),
@@ -149,25 +145,58 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
-fn update_screen(
-    turn: &mut ResMut<Turn>,
-    commands: &mut Commands,
-    trace: &Res<Trace>,
-    onscreen: &mut ResMut<OnScreen>,
-    start_board: &Res<StartBoard>,
-) {
-    update_board(trace, turn, onscreen, start_board, commands);
-    update_next_piece(trace, turn, onscreen, commands);
-    // dbg!(&onscreen.0);
+fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(UiCameraBundle::default());
+
+	commands
+		.spawn_bundle(TextBundle {
+			style: Style {
+				align_self: AlignSelf::Auto,
+				position_type: PositionType::Absolute,
+				position: Rect {
+					bottom: Val::Px(370.0),
+					left: Val::Px(650.0),
+					..Default::default()
+				},
+				..Default::default()
+			},
+			text: Text::with_section(
+				"Turn ",
+				TextStyle {
+					font: asset_server.load("BodoniFLF-Bold.ttf"),
+					font_size: 45.0,
+					color: Color::BLACK,
+				},
+				TextAlignment {
+					horizontal: HorizontalAlign::Center,
+					vertical: VerticalAlign::Center,
+					..Default::default()
+				},
+			),
+			..Default::default()
+		})
+		.insert(TextTurn);
+}
+
+fn update_hud(texts: &mut Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>, turn: usize) {
+	for (mut text, if_turn, if_first, is_second) in texts.iter_mut() {
+		if let Some(_t) = if_turn {
+			text.sections[0].value = format!("Turn {}", turn);
+		}
+	}
 }
 
 fn update_board(
-    trace: &Res<Trace>,
     turn: &mut ResMut<Turn>,
+    commands: &mut Commands,
+    trace: &Res<Trace>,
     onscreen: &mut ResMut<OnScreen>,
     start_board: &Res<StartBoard>,
-    commands: &mut Commands,
+	texts: &mut Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
 ) {
+
+	update_hud(texts, turn.0);
+
     let random_offset = || (rand::random::<f32>() - 0.5) / 5.0;
     let hued_blue = Color::hsl(216.0, 0.68 + random_offset(), 0.59 + random_offset());
     let hued_red = Color::hsl(0.0, 0.67 + random_offset(), 0.63 + random_offset());
@@ -214,64 +243,13 @@ fn update_board(
     }
 }
 
-fn update_next_piece(
-    trace: &Res<Trace>,
-    turn: &mut ResMut<Turn>,
-    onscreen: &mut ResMut<OnScreen>,
-    commands: &mut Commands,
-) {
-    // let board_piece_side = (HEIGHT - 60.0) / max(trace.boards[0].len(), trace.boards[0][0].len()) as f32;
-
-    // // let piece_offset = HEIGHT - 60.0 + 5.0;
-    // for (r, row) in trace.boards[turn.0].iter().enumerate() {
-    //     for (c, col) in row.iter().enumerate() {
-    //         let color;
-
-    //         if let Some(e) = onscreen.0[r][c] {
-    //             if let BoardCell::Empty = col {
-    //                 commands.entity(e).despawn();
-    //                 onscreen.0[r][c] = None;
-    //             }
-    //             continue;
-    //         }
-
-    //         match *col {
-    //             BoardCell::Empty => continue,
-    //             BoardCell::First => color = hued_blue,
-    //             BoardCell::Second => color = hued_red,
-    //         };
-
-    //         onscreen.0[r][c] = Some(
-    //             commands
-    //                 .spawn_bundle(SpriteBundle {
-    //                     transform: Transform {
-    //                         translation: Vec3::new(
-    //                             START_BOARD.0 + board_piece_side * c as f32,
-    //                             START_BOARD.1 - board_piece_side * r as f32,
-    //                             0.0,
-    //                         ),
-    //                         scale: Vec3::new(board_piece_side, board_piece_side, 1.0),
-    //                         ..Default::default()
-    //                     },
-    //                     sprite: Sprite {
-    //                         color,
-    //                         ..Default::default()
-    //                     },
-    //                     ..Default::default()
-    //                 })
-    //                 .insert(Cell)
-    //                 .id(),
-    //         );
-    //     }
-    // }
-}
-
 fn spawn_start(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
+	mut text: Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
 ) {
 
 	commands
@@ -310,30 +288,13 @@ fn spawn_start(
 			..Default::default()
 		});
 
-	commands
-		.spawn_bundle(SpriteBundle {
-			transform: Transform {
-				translation: Vec3::new(
-					HEIGHT + (WIDTH - HEIGHT) / 2.0 - WIDTH / 2.0,
-					50.0,
-					0.0,
-				),
-				scale: Vec3::new((WIDTH - HEIGHT) - 100.0, (WIDTH - HEIGHT) - 100.0, 1.0),
-				..Default::default()
-			},
-			sprite: Sprite {
-				color: Color::hsl(26.0, 0.25, 0.91),
-				..Default::default()
-			},
-			..Default::default()
-		});
-
-    update_screen(
+    update_board(
         &mut turn,
         &mut commands,
         &trace,
         &mut onscreen,
         &start_board,
+		&mut text
     );
 }
 
@@ -345,18 +306,20 @@ fn next_turn(
     trace: Res<Trace>,
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
+	mut text: Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
 ) {
     if play.0 {
         for _ in 0..speed.0 {
             if turn.0 + 1 < trace.boards.len() {
                 turn.0 += 1;
             }
-            update_screen(
+            update_board(
                 &mut turn,
                 &mut commands,
                 &trace,
                 &mut onscreen,
                 &start_board,
+				&mut text
             );
         }
     }
@@ -372,6 +335,7 @@ fn handle_input(
     current: Query<Entity, With<Cell>>,
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
+	mut text: Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
 ) {
     if keys.just_pressed(KeyCode::Space) {
         match play.0 {
@@ -384,12 +348,13 @@ fn handle_input(
         if turn.0 < trace.boards.len() - 1 {
             turn.0 += 1;
         }
-        update_screen(
+        update_board(
             &mut turn,
             &mut commands,
             &trace,
             &mut onscreen,
             &start_board,
+			&mut text
         );
     }
     if keys.just_pressed(KeyCode::Left) {
@@ -397,35 +362,38 @@ fn handle_input(
         if turn.0 > 0 {
             turn.0 -= 1;
         }
-        update_screen(
+        update_board(
             &mut turn,
             &mut commands,
             &trace,
             &mut onscreen,
             &start_board,
+			&mut text
         );
     }
     if keys.just_pressed(KeyCode::S) {
         play.0 = false;
         turn.0 = 0;
-        update_screen(
+        update_board(
             &mut turn,
             &mut commands,
             &trace,
             &mut onscreen,
             &start_board,
+			&mut text
         );
     }
     if keys.just_pressed(KeyCode::E) {
         play.0 = false;
         for t in turn.0..trace.boards.len() {
             turn.0 = t;
-            update_screen(
+            update_board(
                 &mut turn,
                 &mut commands,
                 &trace,
                 &mut onscreen,
                 &start_board,
+				&mut text
             );
         }
     }
@@ -473,3 +441,14 @@ struct Play(bool);
 struct Speed(usize);
 
 struct OnScreen(Vec<Vec<Option<Entity>>>);
+
+#[derive(Component)]
+struct TextTurn;
+
+
+#[derive(Component)]
+struct TextFirstPlayer;
+
+
+#[derive(Component)]
+struct TextSecondPlayer;
