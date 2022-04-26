@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use regex::Regex;
 use std::{cmp::max, env, fs::read_to_string};
 
-const WIDTH: f32 = 800.0;
+const WIDTH: f32 = 900.0;
 const HEIGHT: f32 = 600.0;
 const TIMESTEP: f64 = 5.0 / 60.0;
 const BOARD_SIZE: f32 = HEIGHT - 40.0;
@@ -18,7 +18,7 @@ fn main() {
             height: HEIGHT,
             ..Default::default()
         })
-        .insert_resource(ClearColor(Color::ANTIQUE_WHITE))
+        .insert_resource(ClearColor(Color::hsl(26.0, 0.32, 0.73)))
         .add_plugins(DefaultPlugins)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(Turn(0))
@@ -133,6 +133,11 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
 
     let center_offset_x = - (WIDTH - HEIGHT) / 2.0 - trace.width / 2.0;
 
+	// dbg!(&trace.width);
+	// dbg!(&trace.height);
+	// dbg!(&trace.side);
+	// dbg!(&center_offset_x);
+
     commands.insert_resource(StartBoard(
         center_offset_x,
         (trace.height / 2.0),
@@ -189,8 +194,8 @@ fn update_board(
                     .spawn_bundle(SpriteBundle {
                         transform: Transform {
                             translation: Vec3::new(
-                                start_board.0 + trace.side * c as f32,
-                                start_board.1 - trace.side * r as f32,
+                                start_board.0 + trace.side * c as f32 + trace.side / 2.0,
+                                start_board.1 - trace.side * r as f32 - trace.side / 2.0,
                                 0.0,
                             ),
                             scale: Vec3::new(trace.side, trace.side, 1.0),
@@ -268,6 +273,61 @@ fn spawn_start(
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
 ) {
+
+	commands
+		.spawn_bundle(SpriteBundle {
+			transform: Transform {
+				translation: Vec3::new(
+					start_board.0 + trace.width / 2.0,
+					start_board.1 - trace.height / 2.0,
+					0.0,
+				),
+				scale: Vec3::new(trace.width + 16.0, trace.height + 16.0, 0.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				color: Color::hsl(26.0, 0.32, 0.65),
+				..Default::default()
+			},
+			..Default::default()
+		});
+
+	commands
+		.spawn_bundle(SpriteBundle {
+			transform: Transform {
+				translation: Vec3::new(
+					start_board.0 + trace.width / 2.0,
+					start_board.1 - trace.height / 2.0,
+					0.0,
+				),
+				scale: Vec3::new(trace.width + 6.0, trace.height + 6.0, 1.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				color: Color::hsl(26.0, 0.25, 0.91),
+				..Default::default()
+			},
+			..Default::default()
+		});
+
+	commands
+		.spawn_bundle(SpriteBundle {
+			transform: Transform {
+				translation: Vec3::new(
+					HEIGHT + (WIDTH - HEIGHT) / 2.0 - WIDTH / 2.0,
+					50.0,
+					0.0,
+				),
+				scale: Vec3::new((WIDTH - HEIGHT) - 100.0, (WIDTH - HEIGHT) - 100.0, 1.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				color: Color::hsl(26.0, 0.25, 0.91),
+				..Default::default()
+			},
+			..Default::default()
+		});
+
     update_screen(
         &mut turn,
         &mut commands,
