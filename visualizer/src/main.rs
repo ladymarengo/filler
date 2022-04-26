@@ -28,7 +28,7 @@ fn main() {
         .add_startup_system_to_stage(StartupStage::PreStartup, parse_trace)
         .add_startup_system(spawn_camera.label("camera"))
         .add_startup_system(spawn_start.after("camera"))
-		.add_startup_system(spawn_hud)
+        .add_startup_system(spawn_hud)
         .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(TIMESTEP))
@@ -132,12 +132,9 @@ fn parse_trace(mut commands: Commands, mut onscreen: ResMut<OnScreen>) {
         onscreen.0.push(new);
     }
 
-    let center_offset_x = - (WIDTH - HEIGHT) / 2.0 - trace.width / 2.0;
+    let center_offset_x = -(WIDTH - HEIGHT) / 2.0 - trace.width / 2.0;
 
-    commands.insert_resource(StartBoard(
-        center_offset_x,
-        (trace.height / 2.0),
-    ));
+    commands.insert_resource(StartBoard(center_offset_x, (trace.height / 2.0)));
     commands.insert_resource(trace);
 }
 
@@ -145,45 +142,152 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
-fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>, trace: Res<Trace>) {
     commands.spawn_bundle(UiCameraBundle::default());
 
-	commands
-		.spawn_bundle(TextBundle {
-			style: Style {
-				align_self: AlignSelf::Auto,
-				position_type: PositionType::Absolute,
-				position: Rect {
-					bottom: Val::Px(370.0),
-					left: Val::Px(650.0),
-					..Default::default()
-				},
-				..Default::default()
-			},
-			text: Text::with_section(
-				"Turn ",
-				TextStyle {
-					font: asset_server.load("BodoniFLF-Bold.ttf"),
-					font_size: 45.0,
-					color: Color::BLACK,
-				},
-				TextAlignment {
-					horizontal: HorizontalAlign::Center,
-					vertical: VerticalAlign::Center,
-					..Default::default()
-				},
-			),
-			..Default::default()
-		})
-		.insert(TextTurn);
+    let top: f32 = 120.0;
+    let left: f32 = 610.0;
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(top),
+                    left: Val::Px(left),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                "Turn 0",
+                TextStyle {
+                    font: asset_server.load("BodoniFLF-Bold.ttf"),
+                    font_size: 45.0,
+                    color: Color::BLACK,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+        .insert(TextTurn);
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(top + 70.0),
+                    left: Val::Px(left),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                format!("{}: 1", trace.first_player),
+                TextStyle {
+                    font: asset_server.load("BodoniFLF-Bold.ttf"),
+                    font_size: 40.0,
+                    color: Color::hsl(216.0, 0.80, 0.40),
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+        .insert(TextFirstPlayer);
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(top + 110.0),
+                    left: Val::Px(left),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                format!("{}: 1", trace.second_player),
+                TextStyle {
+                    font: asset_server.load("BodoniFLF-Bold.ttf"),
+                    font_size: 40.0,
+                    color: Color::hsl(0.0, 0.80, 0.40),
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        })
+        .insert(TextSecondPlayer);
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::Auto,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    top: Val::Px(top + 200.0),
+                    left: Val::Px(left),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            text: Text::with_section(
+                "Controls:\nSpace - play/pause\nS - start\nE - end\nUp - faster\nDown - slower\nRight - next turn\nLeft - previous turn",
+                TextStyle {
+                    font: asset_server.load("BodoniFLF-Bold.ttf"),
+                    font_size: 25.0,
+                    color: Color::hsl(0.0, 0.00, 0.30),
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Left,
+                    vertical: VerticalAlign::Top,
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        });
 }
 
-fn update_hud(texts: &mut Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>, turn: usize) {
-	for (mut text, if_turn, if_first, is_second) in texts.iter_mut() {
-		if let Some(_t) = if_turn {
-			text.sections[0].value = format!("Turn {}", turn);
-		}
-	}
+fn update_hud(
+    texts: &mut Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
+    turn: usize,
+    player1: &str,
+    player2: &str,
+    score1: usize,
+    score2: usize,
+) {
+    for (mut text, if_turn, if_first, if_second) in texts.iter_mut() {
+        if let Some(_t) = if_turn {
+            text.sections[0].value = format!("Turn {}", turn);
+        }
+        if let Some(_t) = if_first {
+            text.sections[0].value = format!("{}: {}", player1, score1);
+        }
+        if let Some(_t) = if_second {
+            text.sections[0].value = format!("{}: {}", player2, score2);
+        }
+    }
 }
 
 fn update_board(
@@ -192,16 +296,27 @@ fn update_board(
     trace: &Res<Trace>,
     onscreen: &mut ResMut<OnScreen>,
     start_board: &Res<StartBoard>,
-	texts: &mut Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
+    texts: &mut Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
 ) {
-
-	update_hud(texts, turn.0);
+    let mut score1: usize = 0;
+    let mut score2: usize = 0;
 
     let random_offset = || (rand::random::<f32>() - 0.5) / 5.0;
     let hued_blue = Color::hsl(216.0, 0.68 + random_offset(), 0.59 + random_offset());
     let hued_red = Color::hsl(0.0, 0.67 + random_offset(), 0.63 + random_offset());
     for (r, row) in trace.boards[turn.0].iter().enumerate() {
         for (c, col) in row.iter().enumerate() {
+            match *col {
+                BoardCell::First => score1 += 1,
+                BoardCell::Second => score2 += 1,
+                _ => (),
+            };
+
             let color;
 
             if let Some(e) = onscreen.0[r][c] {
@@ -241,6 +356,15 @@ fn update_board(
             );
         }
     }
+
+    update_hud(
+        texts,
+        turn.0,
+        &trace.first_player,
+        &trace.second_player,
+        score1,
+        score2,
+    );
 }
 
 fn spawn_start(
@@ -249,44 +373,46 @@ fn spawn_start(
     trace: Res<Trace>,
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
-	mut text: Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
+    mut text: Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
 ) {
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(
+                start_board.0 + trace.width / 2.0,
+                start_board.1 - trace.height / 2.0,
+                0.0,
+            ),
+            scale: Vec3::new(trace.width + 16.0, trace.height + 16.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::hsl(26.0, 0.32, 0.65),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
 
-	commands
-		.spawn_bundle(SpriteBundle {
-			transform: Transform {
-				translation: Vec3::new(
-					start_board.0 + trace.width / 2.0,
-					start_board.1 - trace.height / 2.0,
-					0.0,
-				),
-				scale: Vec3::new(trace.width + 16.0, trace.height + 16.0, 0.0),
-				..Default::default()
-			},
-			sprite: Sprite {
-				color: Color::hsl(26.0, 0.32, 0.65),
-				..Default::default()
-			},
-			..Default::default()
-		});
-
-	commands
-		.spawn_bundle(SpriteBundle {
-			transform: Transform {
-				translation: Vec3::new(
-					start_board.0 + trace.width / 2.0,
-					start_board.1 - trace.height / 2.0,
-					0.0,
-				),
-				scale: Vec3::new(trace.width + 6.0, trace.height + 6.0, 1.0),
-				..Default::default()
-			},
-			sprite: Sprite {
-				color: Color::hsl(26.0, 0.25, 0.91),
-				..Default::default()
-			},
-			..Default::default()
-		});
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(
+                start_board.0 + trace.width / 2.0,
+                start_board.1 - trace.height / 2.0,
+                0.0,
+            ),
+            scale: Vec3::new(trace.width + 6.0, trace.height + 6.0, 1.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::hsl(26.0, 0.25, 0.91),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
 
     update_board(
         &mut turn,
@@ -294,7 +420,7 @@ fn spawn_start(
         &trace,
         &mut onscreen,
         &start_board,
-		&mut text
+        &mut text,
     );
 }
 
@@ -306,7 +432,12 @@ fn next_turn(
     trace: Res<Trace>,
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
-	mut text: Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
+    mut text: Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
 ) {
     if play.0 {
         for _ in 0..speed.0 {
@@ -319,7 +450,7 @@ fn next_turn(
                 &trace,
                 &mut onscreen,
                 &start_board,
-				&mut text
+                &mut text,
             );
         }
     }
@@ -335,7 +466,12 @@ fn handle_input(
     current: Query<Entity, With<Cell>>,
     mut onscreen: ResMut<OnScreen>,
     start_board: Res<StartBoard>,
-	mut text: Query<(&mut Text, Option<&TextTurn>, Option<&TextFirstPlayer>, Option<&TextSecondPlayer>)>
+    mut text: Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         match play.0 {
@@ -354,7 +490,7 @@ fn handle_input(
             &trace,
             &mut onscreen,
             &start_board,
-			&mut text
+            &mut text,
         );
     }
     if keys.just_pressed(KeyCode::Left) {
@@ -368,7 +504,7 @@ fn handle_input(
             &trace,
             &mut onscreen,
             &start_board,
-			&mut text
+            &mut text,
         );
     }
     if keys.just_pressed(KeyCode::S) {
@@ -380,7 +516,7 @@ fn handle_input(
             &trace,
             &mut onscreen,
             &start_board,
-			&mut text
+            &mut text,
         );
     }
     if keys.just_pressed(KeyCode::E) {
@@ -393,7 +529,7 @@ fn handle_input(
                 &trace,
                 &mut onscreen,
                 &start_board,
-				&mut text
+                &mut text,
             );
         }
     }
@@ -445,10 +581,8 @@ struct OnScreen(Vec<Vec<Option<Entity>>>);
 #[derive(Component)]
 struct TextTurn;
 
-
 #[derive(Component)]
 struct TextFirstPlayer;
-
 
 #[derive(Component)]
 struct TextSecondPlayer;
