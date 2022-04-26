@@ -1,12 +1,13 @@
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
-use regex::Regex;
-use std::{cmp::max, env, fs::read_to_string};
+mod hud;
+mod parse;
+mod update;
 
-const WIDTH: f32 = 800.0;
+const WIDTH: f32 = 900.0;
 const HEIGHT: f32 = 600.0;
-const START_BOARD: (f32, f32) = (-370.0, 270.0);
 const TIMESTEP: f64 = 5.0 / 60.0;
+const BOARD_SIZE: f32 = HEIGHT - 40.0;
 
 fn main() {
     App::new()
@@ -16,22 +17,17 @@ fn main() {
             height: HEIGHT,
             ..Default::default()
         })
-        .insert_resource(ClearColor(Color::ANTIQUE_WHITE))
+        .insert_resource(ClearColor(Color::hsl(26.0, 0.32, 0.73)))
         .add_plugins(DefaultPlugins)
         .add_system(bevy::input::system::exit_on_esc_system)
-        .insert_resource(Trace {
-            first_player: "".to_string(),
-            second_player: "".to_string(),
-            boards: Vec::new(),
-            pieces: Vec::new(),
-        })
         .insert_resource(Turn(0))
         .insert_resource(Play(false))
         .insert_resource(Speed(3))
-		.insert_resource(OnScreen(Vec::new()))
-        .add_startup_system(parse_trace.label("parse"))
-        .add_startup_system(spawn_camera.label("camera").after("parse"))
+        .insert_resource(OnScreen(Vec::new()))
+        .add_startup_system_to_stage(StartupStage::PreStartup, parse::parse_trace)
+        .add_startup_system(spawn_camera.label("camera"))
         .add_startup_system(spawn_start.after("camera"))
+        .add_startup_system(hud::spawn_hud)
         .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(TIMESTEP))
@@ -41,150 +37,65 @@ fn main() {
         .run()
 }
 
-fn parse_trace(mut trace: ResMut<Trace>, mut onscreen: ResMut<OnScreen>) {
-    let args: Vec<String> = env::args().collect();
-    let file = &args[1];
-
-    let input: Vec<String> = read_to_string(file)
-        .unwrap()
-        .split("Plateau")
-        .map(|l| l.to_string())
-        .collect();
-
-    let re = Regex::new(r"(?s).+/(.+).filler].+/(.+).filler.+").unwrap();
-    let players = re.captures(&input[0]).unwrap();
-
-    let mut boards: Vec<Vec<Vec<BoardCell>>> = Vec::new();
-    let mut pieces: Vec<Vec<Vec<PieceCell>>> = Vec::new();
-
-    for board in &input[1..] {
-        let mut new_board: Vec<Vec<BoardCell>> = Vec::new();
-        let mut new_piece: Vec<Vec<PieceCell>> = Vec::new();
-        let parts: Vec<String> = board.split("Piece").map(|l| l.to_string()).collect();
-
-        let board_rows: Vec<String> = parts[0].split('\n').map(|l| l.to_string()).collect();
-
-        for row in board_rows {
-            if row
-                .chars()
-                .any(|x| x == '.' || x == 'o' || x == 'O' || x == 'x' || x == 'X')
-            {
-                let mut new_row: Vec<BoardCell> = Vec::new();
-                for c in row.chars() {
-                    match c {
-                        '.' => new_row.push(BoardCell::Empty),
-                        'o' | 'O' => new_row.push(BoardCell::First),
-                        'x' | 'X' => new_row.push(BoardCell::Second),
-                        _ => (),
-                    }
-                }
-                new_board.push(new_row);
-            }
-        }
-        boards.push(new_board);
-
-        let piece_rows: Vec<String> = parts[1].split('\n').map(|l| l.to_string()).collect();
-
-        for row in piece_rows {
-            if row.chars().any(|x| x == '.' || x == '*') {
-                let mut new_row: Vec<PieceCell> = Vec::new();
-                for c in row.chars() {
-                    match c {
-                        '.' => new_row.push(PieceCell::Empty),
-                        '*' => new_row.push(PieceCell::Filled),
-                        _ => (),
-                    }
-                }
-                new_piece.push(new_row);
-            }
-        }
-        pieces.push(new_piece);
-    }
-
-    trace.first_player = players.get(1).unwrap().as_str().to_string();
-    trace.second_player = players.get(2).unwrap().as_str().to_string();
-    trace.boards = boards;
-    trace.pieces = pieces;
-
-	for _i in 0..trace.boards[0].len() {
-		let mut new: Vec<bool> = Vec::new();
-		for _j in 0..trace.boards[0][0].len() {
-			new.push(false);
-		}
-		onscreen.0.push(new);
-	}
-}
-
 fn spawn_camera(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-}
-
-fn update_screen(
-    turn: &mut ResMut<Turn>,
-    commands: &mut Commands,
-    trace: &Res<Trace>,
-	onscreen: &mut ResMut<OnScreen>,
-) {
-
-    let side = (HEIGHT - 60.0) / max(trace.boards[0].len(), trace.boards[0][0].len()) as f32;
-    for (r, row) in trace.boards[turn.0].iter().enumerate() {
-        for (c, col) in row.iter().enumerate() {
-
-			let color;
-
-			if onscreen.0[r][c] {
-				continue;
-			}
-
-			match *col {
-				BoardCell::Empty => continue,
-				BoardCell::First => color = Color::GREEN,
-				BoardCell::Second => color = Color::BLUE,
-			};
-
-			onscreen.0[r][c] = true;
-
-			commands
-				.spawn_bundle(SpriteBundle {
-					transform: Transform {
-						translation: Vec3::new(
-							START_BOARD.0 + side * c as f32,
-							START_BOARD.1 - side * r as f32,
-							0.0,
-						),
-						scale: Vec3::new(side, side, 1.0),
-						..Default::default()
-					},
-					sprite: Sprite {
-						color: color,
-						..Default::default()
-					},
-					..Default::default()
-				})
-				.insert(Cell);
-        }
-    }
-	// dbg!(&onscreen.0);
 }
 
 fn spawn_start(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
-	mut onscreen: ResMut<OnScreen>,
+    mut onscreen: ResMut<OnScreen>,
+    start_board: Res<StartBoard>,
+    mut text: Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
 ) {
-    update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
-}
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(
+                start_board.0 + trace.width / 2.0,
+                start_board.1 - trace.height / 2.0,
+                0.0,
+            ),
+            scale: Vec3::new(trace.width + 16.0, trace.height + 16.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::hsl(26.0, 0.32, 0.65),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
 
-fn clean_screen(commands: &mut Commands, old: &Query<Entity, With<Cell>>, onscreen: &mut ResMut<OnScreen>) {
-	for e in old.iter() {
-        commands.entity(e).despawn_recursive();
-    }
-	for i in 0..onscreen.0.len() {
-		for j in 0..onscreen.0[0].len() {
-			onscreen.0[i][j] = false;
-		}
-	}
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(
+                start_board.0 + trace.width / 2.0,
+                start_board.1 - trace.height / 2.0,
+                0.0,
+            ),
+            scale: Vec3::new(trace.width + 6.0, trace.height + 6.0, 1.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::hsl(26.0, 0.25, 0.91),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+
+    update::update_board(
+        &mut turn,
+        &mut commands,
+        &trace,
+        &mut onscreen,
+        &start_board,
+        &mut text,
+    );
 }
 
 fn next_turn(
@@ -193,16 +104,29 @@ fn next_turn(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
-	mut onscreen: ResMut<OnScreen>,
+    mut onscreen: ResMut<OnScreen>,
+    start_board: Res<StartBoard>,
+    mut text: Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
 ) {
     if play.0 {
-        if turn.0 + speed.0 < trace.boards.len() {
-            turn.0 += speed.0;
-        } else {
-            turn.0 = 0;
+        for _ in 0..speed.0 {
+            if turn.0 + 1 < trace.boards.len() {
+                turn.0 += 1;
+            }
+            update::update_board(
+                &mut turn,
+                &mut commands,
+                &trace,
+                &mut onscreen,
+                &start_board,
+                &mut text,
+            );
         }
-
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
     }
 }
 
@@ -213,8 +137,14 @@ fn handle_input(
     mut turn: ResMut<Turn>,
     mut commands: Commands,
     trace: Res<Trace>,
-    current: Query<Entity, With<Cell>>,
-	mut onscreen: ResMut<OnScreen>,
+    mut onscreen: ResMut<OnScreen>,
+    start_board: Res<StartBoard>,
+    mut text: Query<(
+        &mut Text,
+        Option<&TextTurn>,
+        Option<&TextFirstPlayer>,
+        Option<&TextSecondPlayer>,
+    )>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         match play.0 {
@@ -227,26 +157,54 @@ fn handle_input(
         if turn.0 < trace.boards.len() - 1 {
             turn.0 += 1;
         }
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        update::update_board(
+            &mut turn,
+            &mut commands,
+            &trace,
+            &mut onscreen,
+            &start_board,
+            &mut text,
+        );
     }
     if keys.just_pressed(KeyCode::Left) {
-		clean_screen(&mut commands, &current, &mut onscreen);
         play.0 = false;
         if turn.0 > 0 {
             turn.0 -= 1;
         }
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        update::update_board(
+            &mut turn,
+            &mut commands,
+            &trace,
+            &mut onscreen,
+            &start_board,
+            &mut text,
+        );
     }
     if keys.just_pressed(KeyCode::S) {
-		clean_screen(&mut commands, &current, &mut onscreen);
         play.0 = false;
         turn.0 = 0;
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        update::update_board(
+            &mut turn,
+            &mut commands,
+            &trace,
+            &mut onscreen,
+            &start_board,
+            &mut text,
+        );
     }
     if keys.just_pressed(KeyCode::E) {
         play.0 = false;
-        turn.0 = trace.boards.len() - 1;
-        update_screen(&mut turn, &mut commands, &trace, &mut onscreen);
+        for t in turn.0..trace.boards.len() {
+            turn.0 = t;
+            update::update_board(
+                &mut turn,
+                &mut commands,
+                &trace,
+                &mut onscreen,
+                &start_board,
+                &mut text,
+            );
+        }
     }
     if keys.just_pressed(KeyCode::Up) {
         speed.0 += 1;
@@ -259,33 +217,40 @@ fn handle_input(
 }
 
 #[derive(Debug)]
-struct Trace {
-    first_player: String,
-    second_player: String,
-    boards: Vec<Vec<Vec<BoardCell>>>,
-    pieces: Vec<Vec<Vec<PieceCell>>>,
+pub struct Trace {
+    pub first_player: String,
+    pub second_player: String,
+    pub boards: Vec<Vec<Vec<BoardCell>>>,
+    pub width: f32,
+    pub height: f32,
+    pub side: f32,
 }
 
 #[derive(Debug)]
-enum BoardCell {
+pub enum BoardCell {
     Empty,
     First,
     Second,
 }
 
-#[derive(Debug)]
-enum PieceCell {
-    Empty,
-    Filled,
-}
-
-struct Turn(usize);
+pub struct Turn(usize);
 
 #[derive(Component)]
-struct Cell;
+pub struct Cell;
 
-struct Play(bool);
+pub struct Play(pub bool);
 
-struct Speed(usize);
+pub struct Speed(pub usize);
 
-struct OnScreen(Vec<Vec<bool>>);
+pub struct OnScreen(pub Vec<Vec<Option<Entity>>>);
+
+#[derive(Component)]
+pub struct TextTurn;
+
+#[derive(Component)]
+pub struct TextFirstPlayer;
+
+#[derive(Component)]
+pub struct TextSecondPlayer;
+
+pub struct StartBoard(f32, f32);
